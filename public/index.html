@@ -1329,7 +1329,10 @@ async function sendMessage() {
 
     // ── EXECUTE QUERY IN JAVASCRIPT ───────────────────────
     let dataContext = null;
-    if (querySpec.query_type !== 'sop_only') {
+    // Force data fetch if employee or school is selected — even if Claude
+    // thinks it's an SOP question, the user may want contextual data
+    const hasActiveFilter = currentSchool || (currentEmployee && currentEmployee !== 'Overall');
+    if (querySpec.query_type !== 'sop_only' || hasActiveFilter) {
       dataContext = executeQuery(querySpec);
       console.log('Query returned', dataContext.count, 'results');
     }
@@ -1413,10 +1416,11 @@ Return ONLY valid JSON, no markdown, no explanation:
 }
 
 Rules:
-- query_type = sop_only: question is about process/procedure, no school data needed
-- query_type = school_specific: question about one named school
+- query_type = sop_only: question is ONLY about process/procedure with no data needed. If employee or school context is mentioned, never use sop_only.
+- query_type = school_specific: question about one named school or [Context: School selected = ...]
 - query_type = filter: list/filter across multiple schools
-- query_type = aggregate: count/summary across all schools
+- query_type = aggregate: count/summary — use this for "how many", "show me my portfolio", "my schools", "under me", "my list"
+- If [Context: Employee selected = X] is in the question, query_type must be aggregate or filter, never sop_only
 - For date filters use op = "in_days_from_today" with value = number of days
 - For RAG filters use op = "eq" with value = "Red"/"Green"/"Amber"/"Grey"
 - fields_to_return should include only fields needed to answer the question
