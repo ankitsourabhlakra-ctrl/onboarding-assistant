@@ -139,7 +139,7 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
 .sidebar {
   width: var(--sidebar-w); flex-shrink: 0;
   background: var(--white); border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; overflow: hidden; height: 100%;
+  display: flex; flex-direction: column; overflow: hidden;
   transition: width 0.25s ease; z-index: 100;
 }
 .sidebar.collapsed { width: 0; }
@@ -168,7 +168,10 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
 
 /* SIDEBAR PANELS */
 .sidebar-panel {
-  flex: 1; overflow-y: auto; min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  max-height: 100%;
 }
 #spanel-quick { padding: 0; }
 #spanel-toc   { padding: 12px; }
@@ -286,9 +289,18 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
 
   /* Sidebar as drawer */
   .sidebar {
-    position: fixed; top: var(--header-h); left: 0; bottom: 0;
-    transform: translateX(-100%); transition: transform 0.25s ease;
-    z-index: 150; width: 85vw; max-width: 300px;
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    bottom: 0;
+    height: calc(100vh - var(--header-h));
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 150;
+    width: 85vw;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
   }
   .sidebar.mobile-open { transform: translateX(0); }
   .sidebar-overlay.visible { display: block; }
@@ -329,7 +341,7 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
 <header class="header">
   <button class="hamburger" id="hamburger" onclick="toggleMobileSidebar()" aria-label="Menu">&#9776;</button>
   <div class="header-logo">OA</div>
-  <div>
+  <div class="header-title-wrap">
     <div class="header-title">Onboarding Assistant</div>
     <div class="header-sub">Awesome Customer Onboarding SOP</div>
   </div>
