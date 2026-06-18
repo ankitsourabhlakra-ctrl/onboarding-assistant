@@ -604,9 +604,10 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
 }
 .sidebar-tab:hover { color: var(--teal); }
 .sidebar-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
-.sidebar-panel { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+.sidebar-panel { display: flex; flex-direction: column; flex: 1; overflow-y: auto; min-height: 0; }
+#spanel-toc { overflow-y: auto; }
 #spanel-quick { overflow-y: auto; }
-#spanel-about { overflow-y: auto; }
+#spanel-about { overflow-y: auto; padding: 16px; }
 
 /* ── ABOUT CONTENT ───────────────────────────────────────────── */
 .about-content { font-size: 12px; color: var(--text-2); line-height: 1.6; }
@@ -689,7 +690,19 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
 
 /* ── RESPONSIVE ──────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  :root { --sidebar-w: 280px; }
+  :root { --sidebar-w: 85vw; }
+
+  /* Header */
+  .header { padding: 0 10px; gap: 6px; height: auto; min-height: var(--header-h); flex-wrap: nowrap; }
+  .header-logo { width: 28px; height: 28px; font-size: 11px; flex-shrink: 0; }
+  .header > div:nth-child(2) { display: none; }
+  .header-right { gap: 6px; flex-wrap: nowrap; }
+  .data-status { display: none; }
+  .role-select { min-width: 100px; font-size: 11px; padding: 5px 6px; }
+  .school-search-input { width: 110px; font-size: 11px; padding: 5px 6px; }
+  .new-chat-btn { font-size: 11px; padding: 5px 8px; white-space: nowrap; }
+
+  /* Sidebar as drawer */
   .sidebar {
     position: fixed;
     top: var(--header-h);
@@ -698,19 +711,29 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
     transform: translateX(-100%);
     transition: transform 0.25s ease;
     z-index: 150;
+    width: 85vw;
+    max-width: 320px;
   }
   .sidebar.mobile-open { transform: translateX(0); }
   .sidebar-overlay.visible { display: block; }
   .sidebar-toggle { display: none; }
   .hamburger { display: flex; }
-  .messages { padding: 14px 14px; }
-  .input-area { padding: 10px 14px 12px; }
-  .header-sub { display: none; }
-  .role-select { min-width: 130px; font-size: 12px; }
+
+  /* Chat */
+  .messages { padding: 12px; }
+  .input-area { padding: 8px 12px 12px; }
+  .msg-bubble { font-size: 13px; }
+  .chat-textarea { font-size: 14px; }
+
+  /* Active filter bar */
+  .active-filter-bar { padding: 4px 10px; font-size: 10px; flex-wrap: wrap; gap: 4px; }
 }
+
 @media (max-width: 480px) {
-  .new-chat-btn { display: none; }
-  .role-select { min-width: 110px; }
+  .role-select { min-width: 85px; font-size: 10px; }
+  .school-search-input { width: 90px; font-size: 10px; }
+  .new-chat-btn { padding: 4px 6px; font-size: 10px; }
+  .employee-select-wrap { display: none; }
 }
 </style>
 </head>
@@ -732,7 +755,7 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
       <option value="CSM">Customer Success Manager</option>
       <option value="CSE">Customer Support Executive</option>
     </select>
-    <select class="role-select" id="employee-select" onchange="onEmployeeChange(this.value)" style="display:none;min-width:160px">
+    <select class="role-select employee-select-wrap" id="employee-select" onchange="onEmployeeChange(this.value)" style="display:none;min-width:140px">
       <option value="">Select employee</option>
     </select>
     <div class="school-search-wrap" id="school-search-wrap" style="display:none">
@@ -786,12 +809,12 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
       <div style="padding:0 12px 12px" id="quick-btns"></div>
     </div>
     <div class="sidebar-panel" id="spanel-toc" style="display:none">
-      <div class="toc-list">
+      <div style="padding:12px">
         <div class="sidebar-label" style="margin-bottom:8px">SOP Sections</div>
         <div id="toc-list"></div>
       </div>
     </div>
-    <div class="sidebar-panel" id="spanel-about" style="display:none;padding:16px;overflow-y:auto;flex:1">
+    <div class="sidebar-panel" id="spanel-about" style="display:none">
       <div class="about-content">
 
         <div class="about-section">
@@ -1907,9 +1930,6 @@ function switchSidebarTab(tab) {
     document.getElementById('spanel-'+t).style.display = t === tab ? 'flex' : 'none';
     document.getElementById('stab-'+t).classList.toggle('active', t === tab);
   });
-  // Fix flex for non-flex panels
-  if (tab === 'quick') document.getElementById('spanel-quick').style.display = 'block';
-  if (tab === 'toc') document.getElementById('spanel-toc').style.display = 'block';
 }
 
 // ── SIDEBAR TOGGLE ────────────────────────────────────────────
