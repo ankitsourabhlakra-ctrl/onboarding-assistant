@@ -803,13 +803,20 @@ async function loadSchoolData() {
   const statusEl = document.getElementById('data-status');
   try {
     const csvUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=0';
+    console.log('Fetching sheet from:', SHEET_ENDPOINT, 'CSV URL:', csvUrl);
     const resp = await fetch(SHEET_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: csvUrl })
     });
-    if (!resp.ok) throw new Error('fetch failed');
+    console.log('Sheet response status:', resp.status, resp.statusText);
+    if (!resp.ok) {
+      const errText = await resp.text();
+      console.error('Sheet fetch error:', errText);
+      throw new Error('fetch failed: ' + resp.status);
+    }
     const text = await resp.text();
+    console.log('Sheet data received, length:', text.length);
     parseSchoolCSV(text);
     const count = Object.keys(schoolDatabase).length;
     statusEl.className = 'data-status loaded';
