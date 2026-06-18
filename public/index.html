@@ -863,48 +863,63 @@ function isAggregateQuestion(question) {
   return aggWords.some(w => q.includes(w));
 }
 
+function countBy(schools, field, value) {
+  return schools.filter(s => (s[field]||'').trim() === value).length;
+}
+
+function countByField(schools, field) {
+  const counts = {};
+  schools.forEach(s => {
+    const v = (s[field] || 'Unknown').trim();
+    counts[v] = (counts[v] || 0) + 1;
+  });
+  return counts;
+}
+
 function buildDatabaseSummary() {
   const schools = Object.values(schoolDatabase);
   if (schools.length === 0) return null;
 
-  // Count by RAG status
-  const rag = {Green:0, Amber:0, Red:0, Grey:0};
-  const gac = {Yes:0, No:0, Grey:0};
-  const t1  = {Green:0, Amber:0, Red:0, Grey:0};
-  const po  = {Green:0, Amber:0, Red:0, Grey:0};
-  const impl= {Green:0, Amber:0, Red:0, Grey:0};
-  const hw  = {Green:0, Amber:0, Red:0, Grey:0};
+  const overall = countByField(schools, 'overall_rag');
+  const gac     = countByField(schools, 'gac_apm_rag');
+  const t1      = countByField(schools, 'training1_rag');
+  const hw      = countByField(schools, 'hardware_rag');
+  const po      = countByField(schools, 'parent_orientation_rag');
+  const impl    = countByField(schools, 'implementation_rag');
+  const dtr     = countByField(schools, 'digital_teaching_resources_rag');
+  const order   = countByField(schools, 'order_placement_rag');
+  const stages  = countByField(schools, 'onboarding_stage');
 
-  schools.forEach(s => {
-    if (rag[s.overall_rag]  !== undefined) rag[s.overall_rag]++;
-    if (gac[s.gac_apm_rag]  !== undefined) gac[s.gac_apm_rag]++;
-    if (t1[s.training1_rag] !== undefined) t1[s.training1_rag]++;
-    if (po[s.parent_orientation_rag] !== undefined) po[s.parent_orientation_rag]++;
-    if (impl[s.implementation_rag]   !== undefined) impl[s.implementation_rag]++;
-    if (hw[s.hardware_rag]           !== undefined) hw[s.hardware_rag]++;
-  });
+  const fmt = (c) => `Green=${c.Green||0} Amber=${c.Amber||0} Red=${c.Red||0} Grey=${c.Grey||0}`;
 
-  // Schools needing attention
-  const redSchools   = schools.filter(s => s.overall_rag === 'Red').map(s => s.school_name).slice(0,10);
-  const t1NotDone    = schools.filter(s => s.training1_rag === 'Red').map(s => s.school_name).slice(0,10);
-  const gacNotDone   = schools.filter(s => s.gac_apm_rag  === 'Red').map(s => s.school_name).slice(0,10);
-  const hwLow        = schools.filter(s => s.hardware_rag  === 'Red').map(s => s.school_name).slice(0,10);
-  const poNotDone    = schools.filter(s => s.parent_orientation_rag === 'Red').map(s => s.school_name).slice(0,10);
+  const redSchools = schools.filter(s=>s.overall_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
+  const t1Red      = schools.filter(s=>s.training1_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
+  const gacRed     = schools.filter(s=>s.gac_apm_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
+  const hwRed      = schools.filter(s=>s.hardware_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
+  const poRed      = schools.filter(s=>s.parent_orientation_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
+  const implRed    = schools.filter(s=>s.implementation_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
 
-  return `SCHOOL DATABASE SUMMARY (${schools.length} schools total):
+  return `LIVE SCHOOL DATABASE — ${schools.length} schools total.
 
-Overall RAG: Green=${rag.Green} Amber=${rag.Amber} Red=${rag.Red} Grey=${rag.Grey}
-GAC/APM: Green=${gac.Green} Amber=${gac.Amber} Red=${gac.Red} Grey=${gac.Grey}
-TRAINING1: Green=${t1.Green} Amber=${t1.Amber} Red=${t1.Red} Grey=${t1.Grey}
-Hardware: Green=${hw.Green} Amber=${hw.Amber} Red=${hw.Red} Grey=${hw.Grey}
-Parent Orientation: Green=${po.Green} Amber=${po.Amber} Red=${po.Red} Grey=${po.Grey}
-Implementation: Green=${impl.Green} Amber=${impl.Amber} Red=${impl.Red} Grey=${impl.Grey}
+MILESTONE STATUS COUNTS:
+Overall RAG:        ${fmt(overall)}
+Order Placement:    ${fmt(order)}
+GAC/APM:            ${fmt(gac)}
+Digital Resources:  ${fmt(dtr)}
+TRAINING1:          ${fmt(t1)}
+Hardware:           ${fmt(hw)}
+Parent Orientation: ${fmt(po)}
+Implementation:     ${fmt(impl)}
 
-Red RAG schools (up to 10): ${redSchools.join(', ') || 'None'}
-TRAINING1 Red schools (up to 10): ${t1NotDone.join(', ') || 'None'}
-GAC/APM Red schools (up to 10): ${gacNotDone.join(', ') || 'None'}
-Hardware Red schools (up to 10): ${hwLow.join(', ') || 'None'}
-Parent Orientation Red schools (up to 10): ${poNotDone.join(', ') || 'None'}`;
+ONBOARDING STAGES: ${Object.entries(stages).map(([k,v])=>k+': '+v).join(' | ')}
+
+SCHOOLS NEEDING IMMEDIATE ACTION:
+Overall Red (${redSchools.length} shown): ${redSchools.join(' | ')||'None'}
+TRAINING1 Red (${t1Red.length} shown): ${t1Red.join(' | ')||'None'}
+GAC/APM Red (${gacRed.length} shown): ${gacRed.join(' | ')||'None'}
+Hardware Red (${hwRed.length} shown): ${hwRed.join(' | ')||'None'}
+Parent Orientation Red (${poRed.length} shown): ${poRed.join(' | ')||'None'}
+Implementation Red (${implRed.length} shown): ${implRed.join(' | ')||'None'}`;
 }
 
 // ── WELCOME STATE ─────────────────────────────────────────────
@@ -943,8 +958,8 @@ function buildSystemPrompt(schoolCtx) {
 
 RULES:
 1. Answer ONLY from the SOP or school data below. Never use outside knowledge. When school data is provided, USE IT to answer directly — do not say it is not in the SOP.
-2. Keep total answer strictly under 80 words. Count your words before responding. Be ruthlessly concise.
-3. Structure: Issue (1 sentence max) then Info needed (1 sentence max if needed) then Next steps (max 3, numbered). No preamble.
+2. Keep total answer under 60 words. Direct and specific. No filler phrases like 'Based on the data' or 'According to the SOP'.
+3. Structure: Issue (1 sentence) then Next steps (max 3, numbered). Skip Info Needed unless genuinely required. No preamble, no restating the question.
 4. End every response with: Source: Section [number] — [name]
 5. On the line after source write: SOPREF: [one sentence from the SOP that supports your answer]
 6. If a question needs school data and data is provided above, answer from the data. Only say "not covered" if NEITHER the SOP nor the school data contains the answer.
