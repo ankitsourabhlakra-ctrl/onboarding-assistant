@@ -880,6 +880,8 @@ function buildDatabaseSummary() {
   const schools = Object.values(schoolDatabase);
   if (schools.length === 0) return null;
 
+  const TODAY = new Date();
+
   const overall = countByField(schools, 'overall_rag');
   const gac     = countByField(schools, 'gac_apm_rag');
   const t1      = countByField(schools, 'training1_rag');
@@ -888,18 +890,55 @@ function buildDatabaseSummary() {
   const impl    = countByField(schools, 'implementation_rag');
   const dtr     = countByField(schools, 'digital_teaching_resources_rag');
   const order   = countByField(schools, 'order_placement_rag');
-  const stages  = countByField(schools, 'onboarding_stage');
 
   const fmt = (c) => `Green=${c.Green||0} Amber=${c.Amber||0} Red=${c.Red||0} Grey=${c.Grey||0}`;
 
+  // Schools needing immediate action
   const redSchools = schools.filter(s=>s.overall_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
   const t1Red      = schools.filter(s=>s.training1_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
   const gacRed     = schools.filter(s=>s.gac_apm_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
   const hwRed      = schools.filter(s=>s.hardware_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
   const poRed      = schools.filter(s=>s.parent_orientation_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
-  const implRed    = schools.filter(s=>s.implementation_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
 
-  return `LIVE SCHOOL DATABASE — ${schools.length} schools total.
+  // Date-based computations using school_start_date
+  // Schools where TRAINING1 deadline (= school start date) is within next 60 days
+  // and training1_rag is Grey or Red (not yet done)
+  const upcomingT1 = schools.filter(s => {
+    if (!s.school_start_date) return false;
+    const startDate = new Date(s.school_start_date);
+    const daysToStart = Math.ceil((startDate - TODAY) / (1000*60*60*24));
+    const t1Status = s.training1_rag.trim();
+    return daysToStart >= 0 && daysToStart <= 60 && (t1Status === 'Grey' || t1Status === 'Red');
+  }).map(s => {
+    const startDate = new Date(s.school_start_date);
+    const daysToStart = Math.ceil((startDate - TODAY) / (1000*60*60*24));
+    return s.school_name + ' (start: ' + s.school_start_date + ', ' + daysToStart + ' days away)';
+  }).slice(0, 15);
+
+  // Schools where GAC deadline (14 days before start) is within next 60 days and not done
+  const upcomingGAC = schools.filter(s => {
+    if (!s.school_start_date) return false;
+    const startDate = new Date(s.school_start_date);
+    const gacDeadline = new Date(startDate - 7*24*60*60*1000); // 7 days before start = Red
+    const daysToDeadline = Math.ceil((gacDeadline - TODAY) / (1000*60*60*24));
+    const gacStatus = s.gac_apm_rag.trim();
+    return daysToDeadline >= 0 && daysToDeadline <= 60 && (gacStatus === 'Grey' || gacStatus === 'Red');
+  }).map(s => {
+    const startDate = new Date(s.school_start_date);
+    const gacDeadline = new Date(startDate - 7*24*60*60*1000);
+    const daysToDeadline = Math.ceil((gacDeadline - TODAY) / (1000*60*60*24));
+    return s.school_name + ' (GAC deadline: ' + gacDeadline.toISOString().split('T')[0] + ', ' + daysToDeadline + ' days)';
+  }).slice(0, 15);
+
+  // Schools overdue for Parent Orientation (start date + 14 days passed, not done)
+  const overdueParentOrient = schools.filter(s => {
+    if (!s.school_start_date) return false;
+    const redDeadline = new Date(s.school_start_date);
+    redDeadline.setDate(redDeadline.getDate() + 14);
+    return TODAY > redDeadline && s.parent_orientation_rag.trim() === 'Red';
+  }).map(s => s.school_name).slice(0, 10);
+
+  return `LIVE SCHOOL DATABASE — ${schools.length} schools total. Today: ${TODAY.toISOString().split('T')[0]}
 
 MILESTONE STATUS COUNTS:
 Overall RAG:        ${fmt(overall)}
@@ -911,16 +950,24 @@ Hardware:           ${fmt(hw)}
 Parent Orientation: ${fmt(po)}
 Implementation:     ${fmt(impl)}
 
-ONBOARDING STAGES: ${Object.entries(stages).map(([k,v])=>k+': '+v).join(' | ')}
-
 SCHOOLS NEEDING IMMEDIATE ACTION:
 Overall Red (${redSchools.length} shown): ${redSchools.join(' | ')||'None'}
-TRAINING1 Red (${t1Red.length} shown): ${t1Red.join(' | ')||'None'}
-GAC/APM Red (${gacRed.length} shown): ${gacRed.join(' | ')||'None'}
-Hardware Red (${hwRed.length} shown): ${hwRed.join(' | ')||'None'}
-Parent Orientation Red (${poRed.length} shown): ${poRed.join(' | ')||'None'}
-Implementation Red (${implRed.length} shown): ${implRed.join(' | ')||'None'}`;
+TRAINING1 Red: ${t1Red.join(' | ')||'None'}
+GAC/APM Red: ${gacRed.join(' | ')||'None'}
+Hardware Red: ${hwRed.join(' | ')||'None'}
+Parent Orientation Red: ${poRed.join(' | ')||'None'}
+
+DATE-BASED UPCOMING DEADLINES:
+Schools needing TRAINING1 in next 60 days (${upcomingT1.length} schools):
+${upcomingT1.join('\n')||'None'}
+
+Schools needing GAC/APM in next 60 days (${upcomingGAC.length} schools):
+${upcomingGAC.join('\n')||'None'}
+
+Schools overdue for Parent Orientation (${overdueParentOrient.length} schools):
+${overdueParentOrient.join(' | ')||'None'}`;
 }
+
 
 // ── WELCOME STATE ─────────────────────────────────────────────
 function showWelcome() {
@@ -969,7 +1016,7 @@ SOP:
 ${SOP}${schoolSection}`;
 }
 
-// ── SEND MESSAGE ──────────────────────────────────────────────
+// ── SEND MESSAGE — TWO PASS ARCHITECTURE ────────────────────
 async function sendMessage() {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
@@ -980,7 +1027,6 @@ async function sendMessage() {
     return;
   }
 
-  // Clear welcome
   const welcome = document.getElementById('welcome');
   if (welcome) welcome.remove();
 
@@ -993,41 +1039,23 @@ async function sendMessage() {
   isLoading = true;
   document.getElementById('send-btn').disabled = true;
 
-  // Find school context — specific school or aggregate summary
-  const school = findSchoolInQuestion(text);
-  let schoolCtx = null;
-  if (school) {
-    schoolCtx = schoolDataToContext(school);
-  } else if (isAggregateQuestion(text) && Object.keys(schoolDatabase).length > 0) {
-    schoolCtx = buildDatabaseSummary();
-  }
-
   try {
-    console.log('Sending to:', API_ENDPOINT, 'Role:', currentRole, 'School ctx:', !!schoolCtx);
-    const resp = await Promise.race([
-      fetch(API_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-opus-4-5',
-          max_tokens: 450,
-          system: buildSystemPrompt(schoolCtx),
-          messages: conversationHistory
-        })
-      }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
-    ]);
+    // ── PASS 1: QUERY PLANNER ──────────────────────────────
+    // Claude reads the question and returns a JSON query spec
+    const querySpec = await planQuery(text);
+    console.log('Query spec:', JSON.stringify(querySpec));
 
-    const data = await resp.json();
-    console.log('Full API response:', JSON.stringify(data).substring(0, 500));
-    if (data.type === 'error' || data.error) {
-      throw new Error('API error: ' + (data.error ? data.error.message : 'unknown'));
+    // ── EXECUTE QUERY IN JAVASCRIPT ───────────────────────
+    let dataContext = null;
+    if (querySpec.query_type !== 'sop_only') {
+      dataContext = executeQuery(querySpec);
+      console.log('Query returned', dataContext.count, 'results');
     }
-    if (!data.content || !data.content[0] || !data.content[0].text) {
-      throw new Error('empty — raw: ' + JSON.stringify(data).substring(0, 200));
-    }
-    const reply = data.content[0].text;
-    console.log('API reply:', reply.substring(0, 300));
+
+    // ── PASS 2: ANSWER GENERATOR ──────────────────────────
+    // Claude gets the fetched data and generates the final answer
+    const reply = await generateAnswer(text, dataContext, querySpec);
+
     conversationHistory.push({ role: 'assistant', content: reply });
 
     // Token tracking
@@ -1042,22 +1070,234 @@ async function sendMessage() {
 
   } catch(e) {
     removeTyping(typingId);
-    console.error('API error:', e);
+    console.error('Error:', e);
     let msg;
     if (e.message === 'timeout') {
-      msg = 'Request timed out after 30 seconds. Please try again.';
-    } else if (e.message === 'empty') {
-      msg = 'Claude returned an empty response. Please try rephrasing.';
-    } else if (e.message.includes('fetch') || e.message.includes('network') || e.message.includes('Failed')) {
-      msg = 'Cannot reach the API. Make sure proxy.js is running (node proxy.js) and try again.';
+      msg = 'Request timed out. Please try again.';
+    } else if (e.message.includes('fetch') || e.message.includes('Failed')) {
+      msg = 'Cannot reach the API. Check your connection and try again.';
     } else {
-      msg = 'Error: ' + e.message + ' (Check browser console F12 for details)';
+      msg = 'Error: ' + e.message;
     }
     addErrorMessage(msg);
   }
 
   isLoading = false;
   document.getElementById('send-btn').disabled = false;
+}
+
+// ── PASS 1: QUERY PLANNER ─────────────────────────────────────
+async function planQuery(question) {
+  const schoolFields = `
+Available database fields:
+- overall_rag: Green/Amber/Red/Grey
+- gac_apm_rag: Green/Amber/Red/Grey
+- training1_rag: Green/Amber/Red/Grey
+- hardware_rag: Green/Amber/Red/Grey (hardware_pct is the % number)
+- parent_orientation_rag: Green/Amber/Red/Grey
+- implementation_rag: Green/Amber/Red/Grey
+- digital_teaching_resources_rag: Green/Amber/Red/Grey
+- order_placement_rag: Green/Amber/Red/Grey
+- order_delivery_rag: Green/Amber/Red/Grey
+- assigned_ftm: field training manager name
+- assigned_csm: customer success manager name
+- city, state: location
+- onboarding_stage: Pre-Start / Just Started (0-14 days) / Early (15-30 days) / Mid (31-60 days) / Late (61-90 days) / Complete (90+ days)
+- school_start_date: YYYY-MM-DD format
+- days_since_start: number
+- school_name: full school name
+- school_size: number of students
+- nps_score: 0-10
+- open_tickets: count
+- pending_dues_pct: percentage
+- teachers_trained_pct: percentage
+- implementation_pct_subjects: percentage
+- notes: field notes`;
+
+  const systemPrompt = `You are a database query planner. Analyse the user's question and return a JSON query spec.
+
+${schoolFields}
+
+Return ONLY valid JSON, no markdown, no explanation:
+{
+  "query_type": "filter" | "school_specific" | "aggregate" | "sop_only",
+  "filters": [
+    {"field": "field_name", "op": "eq|neq|gt|lt|contains|in_days_from_today", "value": "value"}
+  ],
+  "fields_to_return": ["list of field names needed to answer"],
+  "sort_by": {"field": "field_name", "direction": "asc|desc"},
+  "limit": 20,
+  "school_name": "exact school name if school-specific question"
+}
+
+Rules:
+- query_type = sop_only: question is about process/procedure, no school data needed
+- query_type = school_specific: question about one named school
+- query_type = filter: list/filter across multiple schools
+- query_type = aggregate: count/summary across all schools
+- For date filters use op = "in_days_from_today" with value = number of days
+- For RAG filters use op = "eq" with value = "Red"/"Green"/"Amber"/"Grey"
+- fields_to_return should include only fields needed to answer the question
+- Default limit = 20, max = 50`;
+
+  const resp = await callClaude(systemPrompt, question, [], 300);
+  let raw = resp.replace(/```json|```/g, '').trim();
+
+  try {
+    return JSON.parse(raw);
+  } catch(e) {
+    console.warn('Query plan parse failed, defaulting to sop_only:', raw);
+    return { query_type: 'sop_only', filters: [], fields_to_return: [] };
+  }
+}
+
+// ── QUERY EXECUTOR (pure JavaScript, no API call) ─────────────
+function executeQuery(spec) {
+  const TODAY = new Date();
+  let schools = Object.values(schoolDatabase);
+
+  // School-specific lookup
+  if (spec.query_type === 'school_specific' && spec.school_name) {
+    const key = spec.school_name.toLowerCase();
+    // Try exact match first, then partial
+    let school = schoolDatabase[key];
+    if (!school) {
+      school = schools.find(s => s.school_name.toLowerCase().includes(key) ||
+                                  key.includes(s.school_name.toLowerCase()));
+    }
+    if (school) {
+      return { count: 1, schools: [school], type: 'school_specific' };
+    }
+    return { count: 0, schools: [], type: 'school_specific', error: 'School not found' };
+  }
+
+  // Apply filters
+  if (spec.filters && spec.filters.length > 0) {
+    spec.filters.forEach(f => {
+      schools = schools.filter(s => {
+        const val = (s[f.field] || '').toString().trim();
+        switch(f.op) {
+          case 'eq':       return val.toLowerCase() === f.value.toString().toLowerCase();
+          case 'neq':      return val.toLowerCase() !== f.value.toString().toLowerCase();
+          case 'gt':       return parseFloat(val) > parseFloat(f.value);
+          case 'lt':       return parseFloat(val) < parseFloat(f.value);
+          case 'contains': return val.toLowerCase().includes(f.value.toString().toLowerCase());
+          case 'in_days_from_today': {
+            if (!s.school_start_date) return false;
+            const d = new Date(s.school_start_date);
+            const days = Math.ceil((d - TODAY) / (1000*60*60*24));
+            return days >= 0 && days <= parseInt(f.value);
+          }
+          default: return true;
+        }
+      });
+    });
+  }
+
+  // Sort
+  if (spec.sort_by && spec.sort_by.field) {
+    schools.sort((a, b) => {
+      const av = a[spec.sort_by.field] || '';
+      const bv = b[spec.sort_by.field] || '';
+      const cmp = av.toString().localeCompare(bv.toString(), undefined, {numeric: true});
+      return spec.sort_by.direction === 'desc' ? -cmp : cmp;
+    });
+  }
+
+  // Limit
+  const limit = Math.min(spec.limit || 20, 50);
+  const total = schools.length;
+  schools = schools.slice(0, limit);
+
+  // Return only requested fields
+  const fieldsToReturn = spec.fields_to_return && spec.fields_to_return.length > 0
+    ? spec.fields_to_return
+    : ['school_name','overall_rag','onboarding_stage','school_start_date',
+       'assigned_ftm','assigned_csm','city'];
+
+  // Always include school_name
+  if (!fieldsToReturn.includes('school_name')) fieldsToReturn.unshift('school_name');
+
+  const trimmed = schools.map(s => {
+    const obj = {};
+    fieldsToReturn.forEach(f => { if (s[f] !== undefined) obj[f] = s[f]; });
+    return obj;
+  });
+
+  return { count: total, shown: trimmed.length, schools: trimmed, type: spec.query_type };
+}
+
+// ── PASS 2: ANSWER GENERATOR ──────────────────────────────────
+async function generateAnswer(question, dataContext, querySpec) {
+  const roleRules = {
+    'Field Training Manager':     'Focus on TRAINING1, GAC/APM, implementation. Action-first.',
+    'Customer Success Manager':   'Focus on hardware, parent orientation, relationship. Include customer communication steps.',
+    'Sales Manager':              'Include business impact and retention risk.',
+    'Customer Support Executive': 'Include what to communicate to the customer and expected resolution time.',
+  };
+  const roleInstruction = currentRole && roleRules[currentRole]
+    ? `Employee role: ${currentRole}. ${roleRules[currentRole]}`
+    : '';
+
+  let dataSection = '';
+  if (dataContext && dataContext.count !== undefined) {
+    if (dataContext.count === 0) {
+      dataSection = `\nDATA RESULT: No schools found matching the query.`;
+    } else {
+      const schoolsText = dataContext.schools.map(s =>
+        Object.entries(s).map(([k,v]) => k+': '+v).join(' | ')
+      ).join('\n');
+      dataSection = `\nDATA RESULT: ${dataContext.count} schools total, showing ${dataContext.shown}:\n${schoolsText}`;
+    }
+  }
+
+  const systemPrompt = `You are an Onboarding Assistant for an EdTech company.
+
+RULES:
+1. Answer from the data provided and the SOP. Never use outside knowledge.
+2. Keep answer under 80 words unless listing schools — lists can be longer.
+3. For lists: show school name + most relevant status fields. Format clearly.
+4. Structure: Issue/Finding → Next steps if needed.
+5. End with: Source: Section [X] — [Name] (cite SOP if used, or "School Database" if data-driven)
+6. Never say "Based on the data" or "According to the SOP" — just state the facts.
+7. If no data found, say so clearly and suggest next steps.
+${roleInstruction}
+
+SOP:
+${SOP}${dataSection}`;
+
+  return await callClaude(systemPrompt, question, conversationHistory.slice(0, -1), 500);
+}
+
+// ── SHARED CLAUDE CALLER ──────────────────────────────────────
+async function callClaude(systemPrompt, userMessage, history, maxTokens) {
+  const messages = [...history, { role: 'user', content: userMessage }];
+
+  const resp = await Promise.race([
+    fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: maxTokens || 400,
+        system: systemPrompt,
+        messages: messages
+      })
+    }),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
+  ]);
+
+  const data = await resp.json();
+  console.log('Claude response type:', data.type, 'content blocks:', data.content?.length);
+
+  if (data.type === 'error' || data.error) {
+    throw new Error('API error: ' + (data.error ? data.error.message : 'unknown'));
+  }
+  if (!data.content || !data.content[0] || !data.content[0].text) {
+    throw new Error('empty response: ' + JSON.stringify(data).substring(0, 100));
+  }
+
+  return data.content[0].text;
 }
 
 // ── RENDER MESSAGES ───────────────────────────────────────────
