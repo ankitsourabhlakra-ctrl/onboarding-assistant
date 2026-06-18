@@ -1305,7 +1305,15 @@ async function sendMessage() {
   const welcome = document.getElementById('welcome');
   if (welcome) welcome.remove();
 
-  addUserMessage(text);
+  // Enrich question with active filters so Claude knows the context
+  let enrichedText = text;
+  if (currentSchool) {
+    enrichedText = text + ' [Context: School selected = ' + currentSchool + ']';
+  } else if (currentEmployee && currentEmployee !== 'Overall') {
+    enrichedText = text + ' [Context: Employee selected = ' + currentEmployee + ']';
+  }
+
+  addUserMessage(text);  // show original text to user
   input.value = '';
   input.style.height = 'auto';
   conversationHistory.push({ role: 'user', content: text });
@@ -1316,8 +1324,7 @@ async function sendMessage() {
 
   try {
     // ── PASS 1: QUERY PLANNER ──────────────────────────────
-    // Claude reads the question and returns a JSON query spec
-    const querySpec = await planQuery(text);
+    const querySpec = await planQuery(enrichedText);
     console.log('Query spec:', JSON.stringify(querySpec));
 
     // ── EXECUTE QUERY IN JAVASCRIPT ───────────────────────
@@ -1329,7 +1336,7 @@ async function sendMessage() {
 
     // ── PASS 2: ANSWER GENERATOR ──────────────────────────
     // Claude gets the fetched data and generates the final answer
-    const reply = await generateAnswer(text, dataContext, querySpec);
+    const reply = await generateAnswer(enrichedText, dataContext, querySpec);
 
     conversationHistory.push({ role: 'assistant', content: reply });
 
