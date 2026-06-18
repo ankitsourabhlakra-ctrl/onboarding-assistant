@@ -581,6 +581,107 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
   z-index: 99;
 }
 
+/* ── SIDEBAR TABS ────────────────────────────────────────────── */
+.sidebar-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--white);
+  flex-shrink: 0;
+}
+.sidebar-tab {
+  flex: 1;
+  padding: 10px 4px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--sans);
+  color: var(--text-3);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-height: 40px;
+}
+.sidebar-tab:hover { color: var(--teal); }
+.sidebar-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+.sidebar-panel { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+#spanel-quick { overflow-y: auto; }
+#spanel-about { overflow-y: auto; }
+
+/* ── ABOUT CONTENT ───────────────────────────────────────────── */
+.about-content { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+.about-section { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+.about-section:last-child { border-bottom: none; margin-bottom: 0; }
+.about-heading {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--mono);
+  margin-bottom: 8px;
+}
+.about-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 10px 0 4px;
+}
+.about-examples {
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: var(--mono);
+}
+.about-examples div { padding: 2px 0; }
+.about-examples div::before { content: "→ "; color: var(--teal); }
+.about-step {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+.about-step-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.about-list {
+  padding-left: 16px;
+  margin: 0;
+}
+.about-list li { margin-bottom: 5px; }
+.about-built-by p { margin-bottom: 10px; }
+.about-links { display: flex; gap: 10px; }
+.about-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: var(--teal-lt);
+  border: 1px solid var(--teal);
+  border-radius: 4px;
+  color: var(--teal);
+  font-size: 11px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.about-link:hover { background: var(--teal); color: white; }
+
 /* ── SCROLLBAR ───────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -675,13 +776,93 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
 
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-label">Quick Questions</div>
-      <div id="quick-btns"></div>
+    <div class="sidebar-tabs">
+      <button class="sidebar-tab active" id="stab-quick" onclick="switchSidebarTab('quick')">Quick Q</button>
+      <button class="sidebar-tab" id="stab-toc" onclick="switchSidebarTab('toc')">SOP</button>
+      <button class="sidebar-tab" id="stab-about" onclick="switchSidebarTab('about')">About</button>
     </div>
-    <div class="toc-list">
-      <div class="sidebar-label" style="margin-bottom:8px">SOP Sections</div>
-      <div id="toc-list"></div>
+    <div class="sidebar-panel" id="spanel-quick">
+      <div class="sidebar-label" style="margin:12px 12px 8px">Quick Questions</div>
+      <div style="padding:0 12px 12px" id="quick-btns"></div>
+    </div>
+    <div class="sidebar-panel" id="spanel-toc" style="display:none">
+      <div class="toc-list">
+        <div class="sidebar-label" style="margin-bottom:8px">SOP Sections</div>
+        <div id="toc-list"></div>
+      </div>
+    </div>
+    <div class="sidebar-panel" id="spanel-about" style="display:none;padding:16px;overflow-y:auto;flex:1">
+      <div class="about-content">
+
+        <div class="about-section">
+          <div class="about-heading">About This Tool</div>
+          <p>The Onboarding Assistant is an AI-powered field companion built for the Awesome Customer Onboarding program. It combines two sources of intelligence — the official SOP and live school data — to give every field employee a quick, specific, actionable answer without reading through documents or pulling up spreadsheets mid-conversation.</p>
+        </div>
+
+        <div class="about-section">
+          <div class="about-heading">What It Can Do</div>
+
+          <div class="about-sub">SOP Queries</div>
+          <p>Ask about process, timelines, escalation steps, or roles. The tool answers from the SOP and cites the exact section.</p>
+          <div class="about-examples">
+            <div>What is the Red threshold for hardware?</div>
+            <div>Who owns the Parent Orientation?</div>
+            <div>What evidence is needed for a milestone audit?</div>
+          </div>
+
+          <div class="about-sub">Portfolio View</div>
+          <p>Select your role and name. Ask about your portfolio and the tool shows only your assigned schools with live RAG status.</div>
+          <div class="about-examples">
+            <div>Show me my school portfolio</div>
+            <div>Which of my schools need immediate attention?</div>
+          </div>
+
+          <div class="about-sub">School Deep Dive</div>
+          <p>Select a school from the search bar. Every question is automatically scoped to that school.</p>
+          <div class="about-examples">
+            <div>What is the current RAG status?</div>
+            <div>What are the next steps for this school?</div>
+          </div>
+
+          <div class="about-sub">Aggregate Analysis</div>
+          <p>Ask questions across all schools or your portfolio.</p>
+          <div class="about-examples">
+            <div>How many schools have GAC/APM pending?</div>
+            <div>List schools where Parent Orientation is overdue</div>
+          </div>
+        </div>
+
+        <div class="about-section">
+          <div class="about-heading">How to Use It</div>
+          <div class="about-step"><span class="about-step-num">1</span><span>Select your <strong>role</strong> from the top right dropdown.</span></div>
+          <div class="about-step"><span class="about-step-num">2</span><span>Select your <strong>name</strong> from the employee dropdown (FTM and CSM only). Choose Overall to see all schools.</span></div>
+          <div class="about-step"><span class="about-step-num">3</span><span>Optionally select a <strong>school</strong> from the search box to scope all questions to that school.</span></div>
+          <div class="about-step"><span class="about-step-num">4</span><span>Ask your question naturally. The tool understands context.</span></div>
+          <div class="about-step"><span class="about-step-num">5</span><span>Every answer ends with a <strong>source citation</strong> — SOP section or School Database.</span></div>
+        </div>
+
+        <div class="about-section">
+          <div class="about-heading">Best Practices</div>
+          <ul class="about-list">
+            <li>Always select your employee name before asking portfolio questions.</li>
+            <li>Select a school from the dropdown before asking school-specific questions.</li>
+            <li>Start a New Conversation when switching between schools or topics.</li>
+            <li>If the answer seems incomplete, add more context — mention the milestone name or school stage.</li>
+            <li>The tool only answers from the SOP and your school database — it will not guess.</li>
+          </ul>
+        </div>
+
+        <div class="about-section about-built-by">
+          <div class="about-heading">Built By</div>
+          <p>Ankit Sourabh Lakra — Strategy &amp; Operations leader building with AI.<br>
+          Built as part of a structured AI upskilling journey grounded in 8 years of EdTech operations experience.</p>
+          <div class="about-links">
+            <a href="https://www.linkedin.com/in/ankit-sourabh-lakra" target="_blank" class="about-link">&#128101; LinkedIn</a>
+            <a href="https://solvestories.in" target="_blank" class="about-link">&#127760; SolveStories</a>
+          </div>
+        </div>
+
+      </div>
     </div>
   </aside>
 
@@ -1718,6 +1899,17 @@ function newConversation() {
   tokenCount = 0;
   document.getElementById('banner-token').classList.remove('visible');
   showWelcome();
+}
+
+// ── SIDEBAR TABS ──────────────────────────────────────────────
+function switchSidebarTab(tab) {
+  ['quick','toc','about'].forEach(t => {
+    document.getElementById('spanel-'+t).style.display = t === tab ? 'flex' : 'none';
+    document.getElementById('stab-'+t).classList.toggle('active', t === tab);
+  });
+  // Fix flex for non-flex panels
+  if (tab === 'quick') document.getElementById('spanel-quick').style.display = 'block';
+  if (tab === 'toc') document.getElementById('spanel-toc').style.display = 'block';
 }
 
 // ── SIDEBAR TOGGLE ────────────────────────────────────────────
