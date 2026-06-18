@@ -855,6 +855,58 @@ function schoolDataToContext(school) {
     .join('\n');
 }
 
+function isAggregateQuestion(question) {
+  const q = question.toLowerCase();
+  const aggWords = ['how many','count','total','all schools','list','which schools',
+    'schools have','schools are','schools with','schools that','schools not',
+    'percentage','percent','ratio','summary','overview','status of'];
+  return aggWords.some(w => q.includes(w));
+}
+
+function buildDatabaseSummary() {
+  const schools = Object.values(schoolDatabase);
+  if (schools.length === 0) return null;
+
+  // Count by RAG status
+  const rag = {Green:0, Amber:0, Red:0, Grey:0};
+  const gac = {Yes:0, No:0, Grey:0};
+  const t1  = {Green:0, Amber:0, Red:0, Grey:0};
+  const po  = {Green:0, Amber:0, Red:0, Grey:0};
+  const impl= {Green:0, Amber:0, Red:0, Grey:0};
+  const hw  = {Green:0, Amber:0, Red:0, Grey:0};
+
+  schools.forEach(s => {
+    if (rag[s.overall_rag]  !== undefined) rag[s.overall_rag]++;
+    if (gac[s.gac_apm_rag]  !== undefined) gac[s.gac_apm_rag]++;
+    if (t1[s.training1_rag] !== undefined) t1[s.training1_rag]++;
+    if (po[s.parent_orientation_rag] !== undefined) po[s.parent_orientation_rag]++;
+    if (impl[s.implementation_rag]   !== undefined) impl[s.implementation_rag]++;
+    if (hw[s.hardware_rag]           !== undefined) hw[s.hardware_rag]++;
+  });
+
+  // Schools needing attention
+  const redSchools   = schools.filter(s => s.overall_rag === 'Red').map(s => s.school_name).slice(0,10);
+  const t1NotDone    = schools.filter(s => s.training1_rag === 'Red').map(s => s.school_name).slice(0,10);
+  const gacNotDone   = schools.filter(s => s.gac_apm_rag  === 'Red').map(s => s.school_name).slice(0,10);
+  const hwLow        = schools.filter(s => s.hardware_rag  === 'Red').map(s => s.school_name).slice(0,10);
+  const poNotDone    = schools.filter(s => s.parent_orientation_rag === 'Red').map(s => s.school_name).slice(0,10);
+
+  return `SCHOOL DATABASE SUMMARY (${schools.length} schools total):
+
+Overall RAG: Green=${rag.Green} Amber=${rag.Amber} Red=${rag.Red} Grey=${rag.Grey}
+GAC/APM: Green=${gac.Green} Amber=${gac.Amber} Red=${gac.Red} Grey=${gac.Grey}
+TRAINING1: Green=${t1.Green} Amber=${t1.Amber} Red=${t1.Red} Grey=${t1.Grey}
+Hardware: Green=${hw.Green} Amber=${hw.Amber} Red=${hw.Red} Grey=${hw.Grey}
+Parent Orientation: Green=${po.Green} Amber=${po.Amber} Red=${po.Red} Grey=${po.Grey}
+Implementation: Green=${impl.Green} Amber=${impl.Amber} Red=${impl.Red} Grey=${impl.Grey}
+
+Red RAG schools (up to 10): ${redSchools.join(', ') || 'None'}
+TRAINING1 Red schools (up to 10): ${t1NotDone.join(', ') || 'None'}
+GAC/APM Red schools (up to 10): ${gacNotDone.join(', ') || 'None'}
+Hardware Red schools (up to 10): ${hwLow.join(', ') || 'None'}
+Parent Orientation Red schools (up to 10): ${poNotDone.join(', ') || 'None'}`;
+}
+
 // ── WELCOME STATE ─────────────────────────────────────────────
 function showWelcome() {
   const msgs = document.getElementById('messages');
@@ -890,12 +942,12 @@ function buildSystemPrompt(schoolCtx) {
   return `You are an Onboarding Assistant for an EdTech company helping field employees with the Awesome Customer Onboarding SOP.
 
 RULES:
-1. Answer ONLY from the SOP or school data below. Never use outside knowledge.
+1. Answer ONLY from the SOP or school data below. Never use outside knowledge. When school data is provided, USE IT to answer directly — do not say it is not in the SOP.
 2. Keep total answer strictly under 80 words. Count your words before responding. Be ruthlessly concise.
 3. Structure: Issue (1 sentence max) then Info needed (1 sentence max if needed) then Next steps (max 3, numbered). No preamble.
 4. End every response with: Source: Section [number] — [name]
 5. On the line after source write: SOPREF: [one sentence from the SOP that supports your answer]
-6. If not in SOP: say "This is not covered in the SOP. Please seek guidance from Program Lead Mr. XYZ."
+6. If a question needs school data and data is provided above, answer from the data. Only say "not covered" if NEITHER the SOP nor the school data contains the answer.
 7. Never say I think, possibly, maybe, or it seems.${roleInstruction}
 
 SOP:
@@ -926,9 +978,14 @@ async function sendMessage() {
   isLoading = true;
   document.getElementById('send-btn').disabled = true;
 
-  // Find school context
+  // Find school context — specific school or aggregate summary
   const school = findSchoolInQuestion(text);
-  const schoolCtx = school ? schoolDataToContext(school) : null;
+  let schoolCtx = null;
+  if (school) {
+    schoolCtx = schoolDataToContext(school);
+  } else if (isAggregateQuestion(text) && Object.keys(schoolDatabase).length > 0) {
+    schoolCtx = buildDatabaseSummary();
+  }
 
   try {
     console.log('Sending to:', API_ENDPOINT, 'Role:', currentRole, 'School ctx:', !!schoolCtx);
