@@ -488,6 +488,90 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
 .data-status.loading  { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
 .data-status.error    { background: #FDE8ED; color: var(--maroon); }
 
+/* SCHOOL SEARCH */
+.school-search-wrap { position: relative; }
+.school-search-input {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: var(--white);
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  outline: none;
+  width: 180px;
+  min-height: 44px;
+}
+.school-search-input::placeholder { color: rgba(255,255,255,0.5); }
+.school-search-input:focus { background: rgba(255,255,255,0.25); }
+.school-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 500;
+  display: none;
+}
+.school-dropdown.open { display: block; }
+.school-option {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
+.school-option:last-child { border-bottom: none; }
+.school-option:hover { background: var(--teal-lt); }
+.school-option.selected { background: var(--teal-lt); color: var(--teal); font-weight: 500; }
+.school-option.all-option { color: var(--teal); font-weight: 500; font-style: italic; }
+.school-rag { 
+  display: inline-block; 
+  width: 8px; height: 8px; 
+  border-radius: 50%; 
+  margin-right: 6px; 
+  flex-shrink: 0;
+}
+.rag-Red { background: #e74c3c; }
+.rag-Amber { background: #f39c12; }
+.rag-Green { background: #27ae60; }
+.rag-Grey { background: #aaa; }
+.active-filter-bar {
+  background: rgba(255,255,255,0.1);
+  border-top: 1px solid rgba(255,255,255,0.15);
+  padding: 5px 16px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.8);
+  font-family: var(--mono);
+  display: none;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.active-filter-bar.visible { display: flex; }
+.filter-tag {
+  background: rgba(255,255,255,0.15);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+.filter-clear { 
+  margin-left: auto; 
+  cursor: pointer; 
+  opacity: 0.7;
+  font-size: 11px;
+}
+.filter-clear:hover { opacity: 1; }
+
 /* ── MOBILE OVERLAY ──────────────────────────────────────────── */
 .sidebar-overlay {
   display: none;
@@ -541,13 +625,23 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
   </div>
   <div class="header-right">
     <span class="data-status loading" id="data-status">&#9679; Loading data...</span>
-    <select class="role-select" id="role-select" onchange="setRole(this.value)">
-      <option value="">Select your role</option>
-      <option value="Field Training Manager">Field Training Manager</option>
-      <option value="Customer Success Manager">Customer Success Manager</option>
-      <option value="Sales Manager">Sales Manager</option>
-      <option value="Customer Support Executive">Customer Support Executive</option>
+    <select class="role-select" id="role-select" onchange="onRoleChange(this.value)">
+      <option value="">Select role</option>
+      <option value="FTM">Field Training Manager</option>
+      <option value="CSM">Customer Success Manager</option>
+      <option value="CSE">Customer Support Executive</option>
     </select>
+    <select class="role-select" id="employee-select" onchange="onEmployeeChange(this.value)" style="display:none;min-width:160px">
+      <option value="">Select employee</option>
+    </select>
+    <div class="school-search-wrap" id="school-search-wrap" style="display:none">
+      <input type="text" id="school-search-input" class="school-search-input"
+        placeholder="All schools — type to filter" autocomplete="off"
+        oninput="filterSchoolList(this.value)"
+        onfocus="showSchoolList()"
+        onblur="setTimeout(hideSchoolList, 200)">
+      <div class="school-dropdown" id="school-dropdown"></div>
+    </div>
     <button class="new-chat-btn" onclick="newConversation()">+ New Conversation</button>
   </div>
 </header>
@@ -562,6 +656,15 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
   <span>&#9888;</span>
   <span>Customer data unavailable. Answers based on SOP only.</span>
   <button class="banner-dismiss" onclick="this.parentElement.classList.remove('visible')">&#10005;</button>
+</div>
+
+<!-- ACTIVE FILTER BAR -->
+<div class="active-filter-bar" id="active-filter-bar">
+  <span>&#127989; Viewing:</span>
+  <span class="filter-tag" id="filter-tag-role"></span>
+  <span class="filter-tag" id="filter-tag-employee" style="display:none"></span>
+  <span class="filter-tag" id="filter-tag-school" style="display:none"></span>
+  <span class="filter-clear" onclick="clearFilters()">&#10005; Clear filters</span>
 </div>
 
 <!-- APP BODY -->
@@ -760,6 +863,10 @@ const SHEET_ENDPOINT = (window.location.hostname === 'localhost' || window.locat
 let conversationHistory = [];
 let schoolDatabase = {};  // keyed by school_name lowercase
 let currentRole = '';
+let currentRoleLabel = '';
+let currentEmployee = '';    // specific employee name or '' for all
+let currentSchool = '';      // specific school name or '' for all
+let activeSchoolList = [];   // schools visible in dropdown based on employee filter
 let isLoading = false;
 let tokenCount = 0;
 const TOKEN_WARNING = 160000;
@@ -838,6 +945,8 @@ function parseSchoolCSV(text) {
       schoolDatabase[obj.school_name.toLowerCase()] = obj;
     }
   });
+  activeSchoolList = Object.values(schoolDatabase)
+    .sort((a,b) => a.school_name.localeCompare(b.school_name));
 }
 
 function findSchoolInQuestion(question) {
@@ -976,13 +1085,172 @@ function showWelcome() {
     <div class="welcome-state" id="welcome">
       <div class="welcome-icon">&#128218;</div>
       <div class="welcome-title">Onboarding Assistant</div>
-      <div class="welcome-sub">Select your role above, then ask any question about the onboarding process or a specific school.</div>
+      <div class="welcome-sub">Select your role above. Employee and school filters will appear automatically. Ask any question about the onboarding process or a specific school.</div>
     </div>`;
 }
 
-// ── ROLE ──────────────────────────────────────────────────────
-function setRole(role) {
-  currentRole = role;
+// ── ROLE & EMPLOYEE & SCHOOL SELECTORS ───────────────────────
+const ROLE_LABELS = {
+  'FTM': 'Field Training Manager',
+  'CSM': 'Customer Success Manager',
+  'CSE': 'Customer Support Executive'
+};
+
+const ROLE_FIELD_MAP = {
+  'FTM': 'assigned_ftm',
+  'CSM': 'assigned_csm'
+};
+
+function onRoleChange(roleCode) {
+  currentRole = ROLE_LABELS[roleCode] || roleCode;
+  currentRoleLabel = roleCode;
+  currentEmployee = '';
+  currentSchool = '';
+
+  const empSelect = document.getElementById('employee-select');
+  const schoolWrap = document.getElementById('school-search-wrap');
+  const schoolInput = document.getElementById('school-search-input');
+
+  // Reset employee dropdown
+  empSelect.innerHTML = '<option value="">Select employee</option>';
+  schoolInput.value = '';
+
+  if (roleCode === 'FTM' || roleCode === 'CSM') {
+    // Populate employee dropdown from database
+    const field = ROLE_FIELD_MAP[roleCode];
+    const employees = [...new Set(
+      Object.values(schoolDatabase).map(s => s[field]).filter(Boolean)
+    )].sort();
+
+    empSelect.innerHTML = '<option value="Overall">Overall (All Schools)</option>';
+    employees.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      empSelect.appendChild(opt);
+    });
+    empSelect.value = 'Overall';  // default to Overall
+    empSelect.style.display = '';
+    // Trigger employee change with Overall default
+    onEmployeeChange('Overall');
+  } else {
+    // CSE — no employee dropdown, show all schools
+    empSelect.style.display = 'none';
+    currentEmployee = 'Overall';
+    updateActiveSchoolList();
+    schoolWrap.style.display = '';
+  }
+
+  updateFilterBar();
+}
+
+function onEmployeeChange(employee) {
+  currentEmployee = employee;
+  currentSchool = '';
+  document.getElementById('school-search-input').value = '';
+
+  if (employee) {
+    updateActiveSchoolList();
+    document.getElementById('school-search-wrap').style.display = '';
+  } else {
+    document.getElementById('school-search-wrap').style.display = 'none';
+  }
+  updateFilterBar();
+}
+
+function updateActiveSchoolList() {
+  const schools = Object.values(schoolDatabase);
+  const field = ROLE_FIELD_MAP[currentRoleLabel];
+
+  if (!currentEmployee || currentEmployee === 'Overall' || !field) {
+    activeSchoolList = schools.sort((a,b) => a.school_name.localeCompare(b.school_name));
+  } else {
+    activeSchoolList = schools
+      .filter(s => s[field] === currentEmployee)
+      .sort((a,b) => a.school_name.localeCompare(b.school_name));
+  }
+  renderSchoolDropdown(activeSchoolList, '');
+}
+
+function filterSchoolList(query) {
+  const q = query.toLowerCase();
+  const filtered = activeSchoolList.filter(s =>
+    s.school_name.toLowerCase().includes(q) ||
+    (s.city && s.city.toLowerCase().includes(q))
+  );
+  renderSchoolDropdown(filtered, query);
+  showSchoolList();
+}
+
+function renderSchoolDropdown(schools, query) {
+  const dd = document.getElementById('school-dropdown');
+  let html = '<div class="school-option all-option" onclick="selectSchool(\'\', \'All schools\')">&#9679; All schools (' + activeSchoolList.length + ')</div>';
+  schools.slice(0, 60).forEach(s => {
+    const ragClass = 'rag-' + (s.overall_rag || 'Grey').trim();
+    html += '<div class="school-option" onclick="selectSchool(\'' + 
+      s.school_name.replace(/'/g, "\\'") + '\', \'' + 
+      s.school_name.replace(/'/g, "\\'") + '\')">' +
+      '<span class="school-rag ' + ragClass + '"></span>' +
+      s.school_name +
+      '<span style="margin-left:auto;font-size:10px;color:#aaa">' + (s.city||'') + '</span>' +
+      '</div>';
+  });
+  if (schools.length > 60) {
+    html += '<div class="school-option" style="color:#aaa;font-style:italic">...and ' + (schools.length-60) + ' more. Type to search.</div>';
+  }
+  dd.innerHTML = html;
+}
+
+function selectSchool(schoolName, label) {
+  currentSchool = schoolName;
+  document.getElementById('school-search-input').value = schoolName ? schoolName : '';
+  hideSchoolList();
+  updateFilterBar();
+}
+
+function showSchoolList() {
+  document.getElementById('school-dropdown').classList.add('open');
+}
+function hideSchoolList() {
+  document.getElementById('school-dropdown').classList.remove('open');
+}
+
+function updateFilterBar() {
+  const bar = document.getElementById('active-filter-bar');
+  const tagRole = document.getElementById('filter-tag-role');
+  const tagEmp  = document.getElementById('filter-tag-employee');
+  const tagSch  = document.getElementById('filter-tag-school');
+
+  if (!currentRole) { bar.classList.remove('visible'); return; }
+
+  bar.classList.add('visible');
+  tagRole.textContent = currentRole;
+
+  if (currentEmployee && currentEmployee !== 'Overall') {
+    tagEmp.textContent = currentEmployee;
+    tagEmp.style.display = '';
+  } else if (currentEmployee === 'Overall') {
+    tagEmp.textContent = 'All employees';
+    tagEmp.style.display = '';
+  } else {
+    tagEmp.style.display = 'none';
+  }
+
+  if (currentSchool) {
+    tagSch.textContent = currentSchool;
+    tagSch.style.display = '';
+  } else {
+    tagSch.style.display = 'none';
+  }
+}
+
+function clearFilters() {
+  document.getElementById('role-select').value = '';
+  document.getElementById('employee-select').style.display = 'none';
+  document.getElementById('school-search-wrap').style.display = 'none';
+  document.getElementById('school-search-input').value = '';
+  currentRole = ''; currentRoleLabel = ''; currentEmployee = ''; currentSchool = '';
+  document.getElementById('active-filter-bar').classList.remove('visible');
 }
 
 // ── SYSTEM PROMPT ─────────────────────────────────────────────
@@ -993,8 +1261,11 @@ function buildSystemPrompt(schoolCtx) {
     'Sales Manager':               'Include business impact and retention risk implications.',
     'Customer Support Executive':  'Include what to communicate to the customer and expected resolution time.',
   };
+  const empNote = currentEmployee && currentEmployee !== 'Overall'
+    ? ' Viewing data for employee: ' + currentEmployee + '.' : '';
+  const schNote = currentSchool ? ' Focused on school: ' + currentSchool + '.' : '';
   const roleInstruction = currentRole && roleRules[currentRole]
-    ? `\nEmployee role: ${currentRole}. ${roleRules[currentRole]}`
+    ? '\nEmployee role: ' + currentRole + '. ' + roleRules[currentRole] + empNote + schNote
     : '';
 
   const schoolSection = schoolCtx
@@ -1024,6 +1295,10 @@ async function sendMessage() {
 
   if (!currentRole) {
     alert('Please select your role from the dropdown before asking a question.');
+    return;
+  }
+  if ((currentRoleLabel === 'FTM' || currentRoleLabel === 'CSM') && !currentEmployee) {
+    alert('Please select an employee or Overall before asking a question.');
     return;
   }
 
@@ -1154,7 +1429,15 @@ Rules:
 // ── QUERY EXECUTOR (pure JavaScript, no API call) ─────────────
 function executeQuery(spec) {
   const TODAY = new Date();
-  let schools = Object.values(schoolDatabase);
+  // Start with employee-filtered list if active
+  let schools = (activeSchoolList && activeSchoolList.length > 0 && currentEmployee)
+    ? [...activeSchoolList]
+    : Object.values(schoolDatabase);
+
+  // Pre-filter by selected school if active
+  if (currentSchool) {
+    schools = schools.filter(s => s.school_name === currentSchool);
+  }
 
   // School-specific lookup
   if (spec.query_type === 'school_specific' && spec.school_name) {
