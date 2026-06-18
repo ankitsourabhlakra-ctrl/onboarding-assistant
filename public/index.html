@@ -30,17 +30,39 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
 
 /* ── HEADER ── */
 .header {
-  height: var(--header-h);
   background: var(--teal);
   color: white;
   display: flex;
-  align-items: center;
-  padding: 0 16px;
-  gap: 10px;
+  flex-direction: column;
   flex-shrink: 0;
   border-bottom: 2px solid var(--teal-dk);
   z-index: 200;
 }
+.header-row1 {
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 10px;
+}
+.header-row2 {
+  padding: 6px 12px 8px;
+  border-top: 1px solid rgba(255,255,255,0.15);
+}
+.school-search-input-mobile {
+  width: 100%;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  outline: none;
+  min-height: 38px;
+}
+.school-search-input-mobile::placeholder { color: rgba(255,255,255,0.6); }
+.school-search-input-mobile:focus { background: rgba(255,255,255,0.25); }
 .header-logo {
   width: 32px; height: 32px; border-radius: 4px;
   background: white; display: flex; align-items: center; justify-content: center;
@@ -290,10 +312,10 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
   /* Sidebar as drawer */
   .sidebar {
     position: fixed;
-    top: var(--header-h);
+    top: 0;
     left: 0;
     bottom: 0;
-    height: calc(100vh - var(--header-h));
+    height: 100vh;
     transform: translateX(-100%);
     transition: transform 0.25s ease;
     z-index: 150;
@@ -307,14 +329,14 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
   .sidebar-toggle { display: none; }
   .hamburger { display: flex; }
 
-  /* Header — single line on mobile */
-  .header { padding: 0 8px; gap: 6px; height: var(--header-h); }
+  /* Header row1 — single line on mobile */
+  .header-row1 { padding: 0 8px; gap: 6px; height: var(--header-h); }
   .header-title-wrap { display: none; }
   .data-status { display: none; }
+  .header-desktop-only { display: none !important; }
   .header-right { gap: 5px; flex: 1; justify-content: flex-end; }
   .role-select { font-size: 11px; padding: 4px 6px; min-width: 0; flex: 1; max-width: 160px; }
   #employee-select { font-size: 11px; padding: 4px 6px; min-width: 0; flex: 1; max-width: 130px; }
-  .school-search-input { font-size: 11px; padding: 4px 6px; width: 100px; }
   .new-chat-btn { font-size: 11px; padding: 4px 8px; white-space: nowrap; }
 
   /* Chat */
@@ -339,32 +361,45 @@ body { font-family: var(--sans); background: var(--ivory); color: var(--text); f
 
 <!-- HEADER -->
 <header class="header">
-  <button class="hamburger" id="hamburger" onclick="toggleMobileSidebar()" aria-label="Menu">&#9776;</button>
-  <div class="header-logo">OA</div>
-  <div class="header-title-wrap">
-    <div class="header-title">Onboarding Assistant</div>
-    <div class="header-sub">Awesome Customer Onboarding SOP</div>
-  </div>
-  <div class="header-right">
-    <span class="data-status loading" id="data-status">&#9679; Loading data...</span>
-    <select class="role-select" id="role-select" onchange="onRoleChange(this.value)">
-      <option value="">Select role</option>
-      <option value="FTM">Field Training Manager</option>
-      <option value="CSM">Customer Success Manager</option>
-      <option value="CSE">Customer Support Executive</option>
-    </select>
-    <select class="role-select employee-select-wrap" id="employee-select" onchange="onEmployeeChange(this.value)" style="display:none;min-width:140px">
-      <option value="">Select employee</option>
-    </select>
-    <div class="school-search-wrap" id="school-search-wrap" style="display:none">
-      <input type="text" id="school-search-input" class="school-search-input"
-        placeholder="All schools — type to filter" autocomplete="off"
-        oninput="filterSchoolList(this.value)"
-        onfocus="showSchoolList()"
-        onblur="setTimeout(hideSchoolList, 200)">
-      <div class="school-dropdown" id="school-dropdown"></div>
+  <div class="header-row1">
+    <button class="hamburger" id="hamburger" onclick="toggleMobileSidebar()" aria-label="Menu">&#9776;</button>
+    <div class="header-logo">OA</div>
+    <div class="header-title-wrap">
+      <div class="header-title">Onboarding Assistant</div>
+      <div class="header-sub">Awesome Customer Onboarding SOP</div>
     </div>
-    <button class="new-chat-btn" onclick="newConversation()">+ New Conversation</button>
+    <div class="header-right">
+      <span class="data-status loading" id="data-status">&#9679; Loading data...</span>
+      <select class="role-select" id="role-select" onchange="onRoleChange(this.value)">
+        <option value="">Select role</option>
+        <option value="FTM">Field Training Manager</option>
+        <option value="CSM">Customer Success Manager</option>
+        <option value="CSE">Customer Support Executive</option>
+      </select>
+      <select class="role-select" id="employee-select" onchange="onEmployeeChange(this.value)" style="display:none;min-width:140px">
+        <option value="">Select employee</option>
+      </select>
+      <div class="school-search-wrap header-desktop-only" id="school-search-wrap-desktop" style="display:none">
+        <input type="text" id="school-search-input" class="school-search-input"
+          placeholder="All schools — type to filter" autocomplete="off"
+          oninput="filterSchoolList(this.value)"
+          onfocus="showSchoolList()"
+          onblur="setTimeout(hideSchoolList, 200)">
+        <div class="school-dropdown" id="school-dropdown"></div>
+      </div>
+      <button class="new-chat-btn" onclick="newConversation()">+ New Conversation</button>
+    </div>
+  </div>
+  <div class="header-row2" id="header-row2" style="display:none">
+    <div class="school-search-wrap" id="school-search-wrap-mobile" style="width:100%">
+      <input type="text" id="school-search-input-mobile" class="school-search-input-mobile"
+        placeholder="&#128269; Search and select a school..."
+        autocomplete="off"
+        oninput="filterSchoolListMobile(this.value)"
+        onfocus="showSchoolListMobile()"
+        onblur="setTimeout(hideSchoolListMobile, 200)">
+      <div class="school-dropdown" id="school-dropdown-mobile"></div>
+    </div>
   </div>
 </header>
 
@@ -949,7 +984,10 @@ function onRoleChange(roleCode) {
     empSelect.style.display = 'none';
     currentEmployee = 'Overall';
     updateActiveSchoolList();
-    schoolWrap.style.display = '';
+    const dsk = document.getElementById('school-search-wrap-desktop');
+    const mob = document.getElementById('header-row2');
+    if (dsk) dsk.style.display = '';
+    if (mob) mob.style.display = '';
   }
 
   updateFilterBar();
@@ -962,9 +1000,15 @@ function onEmployeeChange(employee) {
 
   if (employee) {
     updateActiveSchoolList();
-    document.getElementById('school-search-wrap').style.display = '';
+    const dsk = document.getElementById('school-search-wrap-desktop');
+    const mob = document.getElementById('header-row2');
+    if (dsk) dsk.style.display = '';
+    if (mob) mob.style.display = '';
   } else {
-    document.getElementById('school-search-wrap').style.display = 'none';
+    const dsk = document.getElementById('school-search-wrap-desktop');
+    const mob = document.getElementById('header-row2');
+    if (dsk) dsk.style.display = 'none';
+    if (mob) mob.style.display = 'none';
   }
   updateFilterBar();
 }
@@ -993,6 +1037,23 @@ function filterSchoolList(query) {
   showSchoolList();
 }
 
+function syncMobileSchoolInput(val) {
+  const mob = document.getElementById('school-search-input-mobile');
+  if (mob) mob.value = val;
+}
+function filterSchoolListMobile(query) {
+  filterSchoolList(query);
+  // also sync desktop input
+  const dsk = document.getElementById('school-search-input');
+  if (dsk) dsk.value = query;
+}
+function showSchoolListMobile() {
+  document.getElementById('school-dropdown-mobile').classList.add('open');
+}
+function hideSchoolListMobile() {
+  document.getElementById('school-dropdown-mobile').classList.remove('open');
+}
+
 function renderSchoolDropdown(schools, query) {
   const dd = document.getElementById('school-dropdown');
   let html = '<div class="school-option all-option" onclick="selectSchool(\'\', \'All schools\')">&#9679; All schools (' + activeSchoolList.length + ')</div>';
@@ -1010,11 +1071,24 @@ function renderSchoolDropdown(schools, query) {
     html += '<div class="school-option" style="color:#aaa;font-style:italic">...and ' + (schools.length-60) + ' more. Type to search.</div>';
   }
   dd.innerHTML = html;
+  // Mirror to mobile dropdown
+  const ddm = document.getElementById('school-dropdown-mobile');
+  if (ddm) ddm.innerHTML = html.replace(/onclick="selectSchool/g, 'onclick="selectSchoolMobile');
+}
+
+function selectSchoolMobile(schoolName, label) {
+  selectSchool(schoolName, label);
+  const mob = document.getElementById('school-search-input-mobile');
+  if (mob) mob.value = schoolName || '';
+  hideSchoolListMobile();
 }
 
 function selectSchool(schoolName, label) {
   currentSchool = schoolName;
-  document.getElementById('school-search-input').value = schoolName ? schoolName : '';
+  const dskInput = document.getElementById('school-search-input');
+  const mobInput = document.getElementById('school-search-input-mobile');
+  if (dskInput) dskInput.value = schoolName || '';
+  if (mobInput) mobInput.value = schoolName || '';
   hideSchoolList();
   updateFilterBar();
 }
@@ -1058,8 +1132,14 @@ function updateFilterBar() {
 function clearFilters() {
   document.getElementById('role-select').value = '';
   document.getElementById('employee-select').style.display = 'none';
-  document.getElementById('school-search-wrap').style.display = 'none';
-  document.getElementById('school-search-input').value = '';
+  const dsk2 = document.getElementById('school-search-wrap-desktop');
+  const mob2 = document.getElementById('header-row2');
+  if (dsk2) dsk2.style.display = 'none';
+  if (mob2) mob2.style.display = 'none';
+  const si = document.getElementById('school-search-input');
+  const sim = document.getElementById('school-search-input-mobile');
+  if (si) si.value = '';
+  if (sim) sim.value = '';
   currentRole = ''; currentRoleLabel = ''; currentEmployee = ''; currentSchool = '';
   document.getElementById('active-filter-bar').classList.remove('visible');
 }
