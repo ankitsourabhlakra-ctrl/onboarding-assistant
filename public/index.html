@@ -802,13 +802,9 @@ function renderTOC() {
 async function loadSchoolData() {
   const statusEl = document.getElementById('data-status');
   try {
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=0';
-    console.log('Fetching sheet from:', SHEET_ENDPOINT, 'CSV URL:', csvUrl);
-    const resp = await fetch(SHEET_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: csvUrl })
-    });
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-9-O8-LTr8ipZKhKqR0M_u6AY_7SktM02q1oAAiYPk6KZTaleqNq5kV-rWyqQZNJvUr7L-gwYIhNC/pub?gid=590007201&single=true&output=csv';
+    console.log('Fetching published sheet directly:', csvUrl);
+    const resp = await fetch(csvUrl);
     console.log('Sheet response status:', resp.status, resp.statusText);
     if (!resp.ok) {
       const errText = await resp.text();
