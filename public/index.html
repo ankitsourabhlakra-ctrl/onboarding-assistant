@@ -1122,7 +1122,7 @@ function onRoleChange(roleCode) {
       Object.values(schoolDatabase).map(s => s[field]).filter(Boolean)
     )].sort();
 
-    empSelect.innerHTML = '<option value="Overall">Overall (All Schools)</option>';
+    empSelect.innerHTML = '<option value="Overall">Overall</option>';
     employees.forEach(name => {
       const opt = document.createElement('option');
       opt.value = name;
