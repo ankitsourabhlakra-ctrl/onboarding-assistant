@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onboarding Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ivory:   #FFFFF0;
+  --teal:    #007B8A;
+  --teal-lt: #E6F4F6;
+  --teal-dk: #005F6B;
+  --maroon:  #800020;
+  --maroon-lt: #FCE8ED;
+  --text:    #1A1A1A;
+  --text-2:  #4A4A4A;
+  --text-3:  #7A7A7A;
+  --border:  #D8D8C8;
+  --border-2:#C0C0B0;
+  --white:   #FFFFFF;
+  --sans:    'IBM Plex Sans', sans-serif;
+  --mono:    'IBM Plex Mono', monospace;
+  --sidebar-w: 260px;
+  --header-h:  56px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: var(--sans); background: var(--ivory); color: var(--text); font-size: 14px; line-height: 1.5; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── HEADER ─────────────────────────────────────────────────── */
+.header {
+  height: var(--header-h);
+  background: var(--teal);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  flex-shrink: 0;
+  border-bottom: 2px solid var(--teal-dk);
+  position: relative;
+  z-index: 200;
+}
+.header-logo {
+  width: 32px; height: 32px;
+  background: var(--white);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--teal);
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.header-title { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
+.header-sub   { font-size: 11px; opacity: 0.75; font-family: var(--mono); }
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.role-select {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: var(--white);
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  min-width: 180px;
+}
+.role-select option { background: var(--teal-dk); color: var(--white); }
+.new-chat-btn {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: var(--white);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 44px;
+  transition: background 0.15s;
+}
+.new-chat-btn:hover { background: rgba(255,255,255,0.25); }
+.hamburger {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--white);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  min-height: 44px;
+  min-width: 44px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── LAYOUT ─────────────────────────────────────────────────── */
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: transform 0.25s ease, width 0.25s ease;
+  z-index: 100;
+}
+.sidebar.collapsed {
+  width: 0;
+  overflow: hidden;
+}
+.sidebar-toggle {
+  position: absolute;
+  left: var(--sidebar-w);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: none;
+  width: 18px;
+  height: 48px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  font-size: 10px;
+  z-index: 101;
+  transition: left 0.25s ease;
+  border-radius: 0 4px 4px 0;
+}
+.sidebar.collapsed + .sidebar-toggle { left: 0; }
+.sidebar-section {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sidebar-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+.toc-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+.toc-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.1s;
+  min-height: 44px;
+  align-items: center;
+}
+.toc-item:hover { background: var(--teal-lt); }
+.toc-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--teal);
+  font-weight: 500;
+  flex-shrink: 0;
+  width: 22px;
+}
+.toc-name {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+.quick-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--text-2);
+  cursor: pointer;
+  margin-bottom: 5px;
+  min-height: 44px;
+  transition: all 0.1s;
+  line-height: 1.4;
+}
+.quick-btn:hover { background: var(--teal-lt); border-color: var(--teal); color: var(--teal); }
+.quick-btn:last-child { margin-bottom: 0; }
+
+/* ── MAIN CHAT ───────────────────────────────────────────────── */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ── BANNERS ─────────────────────────────────────────────────── */
+.banner {
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.banner.visible { display: flex; }
+.banner-warn {
+  background: var(--maroon-lt);
+  color: var(--maroon);
+  border-bottom: 1px solid #F0C0CC;
+}
+.banner-info {
+  background: var(--teal-lt);
+  color: var(--teal-dk);
+  border-bottom: 1px solid #B0D8DC;
+}
+.banner-dismiss {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: inherit;
+  padding: 0 4px;
+  min-height: 32px;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── MESSAGES ────────────────────────────────────────────────── */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* WELCOME STATE */
+.welcome-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-3);
+}
+.welcome-icon {
+  width: 52px; height: 52px;
+  border-radius: 8px;
+  background: var(--teal-lt);
+  border: 1px solid var(--teal);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  margin-bottom: 14px;
+  color: var(--teal);
+}
+.welcome-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.welcome-sub { font-size: 13px; max-width: 340px; line-height: 1.6; }
+
+/* SKELETON */
+.skeleton-wrap { padding: 20px 24px; }
+.skeleton-line {
+  height: 14px;
+  background: linear-gradient(90deg, #E8E8D8 25%, #D8D8C8 50%, #E8E8D8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 3px;
+  margin-bottom: 10px;
+}
+.skeleton-line:nth-child(2) { width: 75%; }
+.skeleton-line:nth-child(3) { width: 90%; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* MESSAGE BUBBLES */
+.msg { display: flex; gap: 10px; max-width: 860px; }
+.msg.user  { flex-direction: row-reverse; align-self: flex-end; }
+.msg.assistant { align-self: flex-start; width: 100%; }
+
+.msg-avatar {
+  width: 30px; height: 30px;
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.msg.user .msg-avatar      { background: var(--teal); color: var(--white); }
+.msg.assistant .msg-avatar { background: var(--ivory); border: 1px solid var(--border); color: var(--teal); }
+
+.msg-content { flex: 1; min-width: 0; }
+
+.msg-bubble {
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.msg.user .msg-bubble {
+  background: var(--teal);
+  color: var(--white);
+  border-radius: 6px 2px 6px 6px;
+}
+.msg.assistant .msg-bubble {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 2px 6px 6px 6px;
+  color: var(--text);
+}
+.msg-role-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-3);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* SOURCE CITATION */
+.msg-source {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.source-label { opacity: 0.6; }
+
+/* SOP TEXT EXPANDABLE */
+.sop-expand {
+  margin-top: 6px;
+}
+.sop-expand summary {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sop-expand summary::before { content: "▶"; font-size: 8px; }
+.sop-expand[open] summary::before { content: "▼"; }
+.sop-expand-body {
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-family: var(--mono);
+  color: var(--text-2);
+  line-height: 1.6;
+  margin-top: 4px;
+  white-space: pre-wrap;
+}
+
+/* TYPING INDICATOR */
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 4px 0;
+}
+.typing-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text-3);
+  animation: bounce 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce {
+  0%,60%,100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+
+/* ── INPUT AREA ──────────────────────────────────────────────── */
+.input-area {
+  padding: 12px 24px 16px;
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.input-row { display: flex; gap: 8px; align-items: flex-end; }
+.input-wrap {
+  flex: 1;
+  background: var(--ivory);
+  border: 1px solid var(--border-2);
+  border-radius: 6px;
+  display: flex;
+  align-items: flex-end;
+  padding: 9px 12px;
+  transition: border-color 0.15s;
+}
+.input-wrap:focus-within { border-color: var(--teal); }
+.chat-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text);
+  resize: none;
+  line-height: 1.5;
+  min-height: 22px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+.chat-textarea::placeholder { color: var(--text-3); }
+.send-btn {
+  width: 44px; height: 44px;
+  background: var(--teal);
+  border: none;
+  border-radius: 6px;
+  color: var(--white);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.send-btn:hover { background: var(--teal-dk); }
+.send-btn:disabled { background: var(--border); cursor: not-allowed; }
+.input-hint {
+  font-size: 10px;
+  color: var(--text-3);
+  font-family: var(--mono);
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* ── DATA STATUS BAR ─────────────────────────────────────────── */
+.data-status {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.data-status.loaded   { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.9); }
+.data-status.loading  { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+.data-status.error    { background: #FDE8ED; color: var(--maroon); }
+
+/* ── MOBILE OVERLAY ──────────────────────────────────────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 99;
+}
+
+/* ── SCROLLBAR ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── RESPONSIVE ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 280px; }
+  .sidebar {
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 150;
+  }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .sidebar-overlay.visible { display: block; }
+  .sidebar-toggle { display: none; }
+  .hamburger { display: flex; }
+  .messages { padding: 14px 14px; }
+  .input-area { padding: 10px 14px 12px; }
+  .header-sub { display: none; }
+  .role-select { min-width: 130px; font-size: 12px; }
+}
+@media (max-width: 480px) {
+  .new-chat-btn { display: none; }
+  .role-select { min-width: 110px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <button class="hamburger" id="hamburger" onclick="toggleMobileSidebar()" aria-label="Menu">&#9776;</button>
+  <div class="header-logo">OA</div>
+  <div>
+    <div class="header-title">Onboarding Assistant</div>
+    <div class="header-sub">Awesome Customer Onboarding SOP</div>
+  </div>
+  <div class="header-right">
+    <span class="data-status loading" id="data-status">&#9679; Loading data...</span>
+    <select class="role-select" id="role-select" onchange="setRole(this.value)">
+      <option value="">Select your role</option>
+      <option value="Field Training Manager">Field Training Manager</option>
+      <option value="Customer Success Manager">Customer Success Manager</option>
+      <option value="Sales Manager">Sales Manager</option>
+      <option value="Customer Support Executive">Customer Support Executive</option>
+    </select>
+    <button class="new-chat-btn" onclick="newConversation()">+ New Conversation</button>
+  </div>
+</header>
+
+<!-- BANNERS -->
+<div class="banner banner-warn" id="banner-token">
+  <span>&#9888;</span>
+  <span>Conversation memory is nearly full. Start a new conversation to avoid incomplete responses.</span>
+  <button class="banner-dismiss" onclick="this.parentElement.classList.remove('visible')">&#10005;</button>
+</div>
+<div class="banner banner-warn" id="banner-data-fail">
+  <span>&#9888;</span>
+  <span>Customer data unavailable. Answers based on SOP only.</span>
+  <button class="banner-dismiss" onclick="this.parentElement.classList.remove('visible')">&#10005;</button>
+</div>
+
+<!-- APP BODY -->
+<div class="app-body">
+
+  <!-- SIDEBAR OVERLAY (mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Quick Questions</div>
+      <div id="quick-btns"></div>
+    </div>
+    <div class="toc-list">
+      <div class="sidebar-label" style="margin-bottom:8px">SOP Sections</div>
+      <div id="toc-list"></div>
+    </div>
+  </aside>
+
+  <!-- SIDEBAR TOGGLE (desktop) -->
+  <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleDesktopSidebar()" title="Toggle sidebar">&#8249;</button>
+
+  <!-- MAIN CHAT -->
+  <main class="chat-main">
+    <div class="messages" id="messages">
+      <div id="skeleton-loader" class="skeleton-wrap">
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-row">
+        <div class="input-wrap">
+          <textarea class="chat-textarea" id="chat-input"
+            placeholder="Ask about any onboarding milestone, SLA, or school status..."
+            onkeydown="handleKey(event)" rows="1"></textarea>
+        </div>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send">&#10148;</button>
+      </div>
+      <div class="input-hint">Enter to send &nbsp;&bull;&nbsp; Shift+Enter for new line &nbsp;&bull;&nbsp; Select your role before asking</div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────
+const SOP = `STANDARD OPERATING PROCEDURE (SOP)
+
+Awesome Customer Onboarding – Field Agent Operations Manual
+
+Purpose: This SOP provides a complete operational framework for Sales Managers, Customer Success Managers, Field Training Managers, Customer Support Executives, leadership team and other field teams responsible for delivering an Awesome Customer Onboarding.
+
+Objective: Ensure that every school successfully transitions into the new academic year, achieves Green RAG status across all milestones, and demonstrates effective implementation of the academic program.
+
+Target Outcome: At least 80% of schools achieve an Awesome Customer Onboarding.
+
+## Section 1. Definitions & Success Criteria
+
+Awesome Customer Onboarding means:
+- Order placed and delivered on time. Red = Order not placed or not delivered 45 days before school start.
+- Adequate hardware available. Red = Less than 80% classrooms hardware placed.
+- GOAL ALIGNMENT CONVERSATION + ACADEMIC PLANNING MEETING completed. Red = GAC or APM not completed before 7 days of school start.
+- Digital Teaching Resources updated and accessible. Red = 100% of digital resources not available to teach first two months.
+- TRAINING1 completed with positive feedback. Red = Not completed before the school start.
+- Parent Orientation completed. Red = Not completed even after 14 days of school start.
+- School demonstrates implementation. Red = School is not using digital resources to teach in 80% of class subjects at least twice a week.
+- All mandatory feedback collected.
+
+RAG Definitions:
+Green = Completed within SLA and quality standards.
+Amber = Completed after SLA or quality concerns exist.
+Red = Not completed and SLA breached.
+Grey = Not yet due.
+
+## Section 2. Roles & Responsibilities
+
+Field Training Manager: Owns ACADEMIC PLANNING MEETING, GOAL ALIGNMENT CONVERSATION, TRAINING1, implementation reviews and school readiness.
+Customer Success Manager: Owns relationship management, order placement support, hardware adequacy and parent orientation.
+Sales Manager: Supports new school onboarding, orientation calls, nucleus readiness, and STUDENT ENGLISH LITERACY LEVEL confirmation.
+School Owner and Principal: Provide leadership alignment, teacher participation, resource allocation and implementation ownership.
+
+## Section 3. School Allocation Process
+
+Step 1: Verify school allocation.
+Step 2: Verify school profile.
+Step 3: Verify school start date.
+Step 4: Validate ownership details.
+Step 5: Confirm product configuration.
+No activity should proceed until all foundational data is validated.
+
+## Section 4. ACADEMIC PLANNING MEETING + GOAL ALIGNMENT CONVERSATION Detailed Procedure
+
+Timeline: 14 days before School Start. Red deadline: 7 days before school start.
+Preparation: 1. Review school profile. 2. Review previous implementation data. 3. Verify participant availability. 4. Prepare School Success Roadmap.
+Meeting Coverage: Goal setting, academic planning, teacher allocation, timetabling, annual calendar, school events, examination planning, STUDENT ENGLISH LITERACY LEVEL confirmation, product walkthrough, role clarity.
+Mandatory Outputs: School Success Roadmap, Annual Calendar, School Start Date confirmation, TRAINING1 date confirmation, Completion Form closure.
+
+## Section 5. Hardware Readiness SOP
+
+Objective: Ensure every teacher and classroom has access to required hardware.
+Verification: Count teachers, count classrooms, verify tab inventory, verify TV inventory.
+Green: 100% required hardware available.
+Amber: 80%-99% availability.
+Red: Less than 80% availability.
+Escalation: Hardware gaps must be reported within 24 hours.
+
+## Section 6. Digital Teaching Resources Readiness SOP
+
+Objective: Ensure every teacher can teach immediately after TRAINING1.
+Checks: School promoted to correct academic year, product configuration correct, Teacher App updated, Digital Teaching Resources downloaded, assessments available, SCHOOL LOCAL DIGITAL RESOURCES HARDWARE operational where applicable.
+Special Cases: Product migration, hybrid to full product, full product replacement, Techbook schools.
+Red threshold: 100% of digital resources must be available to teach first two months.
+
+## Section 7. TRAINING1 Preparedness SOP
+
+Red threshold: TRAINING1 must be completed BEFORE school start date.
+T-5 Days: Tabs delivered, TVs delivered, subject allocation complete, teacher registration complete.
+T-3 Days: Devices tested, Digital Teaching Resources validated, TV setup verified.
+T-1 Day: Teacher attendance confirmed, training room confirmed, devices charged, no class conflicts.
+Failure at any checkpoint requires immediate intervention.
+
+## Section 8. Training Day 1 Execution SOP
+
+Pre-Training: Meet School Owner, explain agenda, confirm attendance.
+Training Coverage: Product philosophy, lesson plans, teacher app, classroom demonstrations, assessments, remediation process.
+Teacher Demonstration: Every teacher must demonstrate usage.
+Closure: Feedback collection, TEACHER ASYNC SELF LEARNING RESOURCES course recommendations, Completion Form closure.
+
+## Section 9. Implementation Monitoring SOP
+
+Implementation Framework: PTMR
+Prepare: Teachers study lesson plans.
+Teach: Teachers use all prescribed resources.
+Monitor: Teachers conduct assessments.
+Remediate: Teachers use AI-based remediation.
+Red threshold: School is not using digital resources to teach in 80% of class subjects at least twice a week.
+Evidence Collection: Classroom observations, teacher interviews, student work review, assessment review.
+
+## Section 10. Parent Orientation SOP
+
+Purpose: Align parents on learning outcomes and program benefits.
+Red threshold: Not completed even after 14 days of school start.
+Coverage: NCF alignment, classroom experience, expected learning outcomes, parent support role.
+Post Session: Feedback collection, attendance tracking, closure update.
+
+## Section 11. RAG Governance Framework
+
+Daily Review: Review all schools moving to Red.
+Weekly Review: Review all Amber schools.
+Escalation Triggers: Missed milestone, school unresponsive, hardware shortage, TRAINING1 risk, implementation failure.
+Every Red school must have: 1. Root cause. 2. Action owner. 3. Recovery plan. 4. Closure date.
+
+## Section 12. Daily Field Agent Checklist
+
+Before Starting Day: Review dashboard, prioritize Red schools, confirm visits.
+During Visits: Capture evidence, update Completion Form, validate milestones.
+End of Day: Update closures, escalate blockers, prepare next-day plan.
+
+## Section 13. Audit Standards
+
+Evidence Required: Meeting attendance, feedback forms, photos, Completion Form entries, observation notes.
+Any milestone without evidence shall be treated as incomplete.
+
+## Section 14. SLA Reference Table
+
+Order Placement: 15 days before school start. Red if not done 45 days before school start.
+Order Delivery: 10 days from order placement. Red if not delivered 45 days before school start.
+GOAL ALIGNMENT CONVERSATION + ACADEMIC PLANNING MEETING: 14 days before school start. Red if not done 7 days before school start.
+Digital Teaching Resources Update: Before TRAINING1. Red if 100% not available for first 2 months.
+TRAINING1: Must be completed BEFORE school start. Red if not completed before school start date.
+Parent Orientation: Within 30 days after school start. Red if not done within 14 days of school start.
+Implementation: Within 30 days after TRAINING1. Red if less than 80% subjects using digital resources twice a week.
+
+## Appendix A: School Visit Template
+
+Fields: School Name, School ID, Visit Date, Visited By.
+Milestones Reviewed: Order Placement, Order Delivery, Hardware Readiness, ACADEMIC PLANNING MEETING + GOAL ALIGNMENT CONVERSATION, Digital Teaching Resources Readiness, TRAINING1, Implementation, Parent Orientation.
+Key Risks, Corrective Actions, Next Follow-up Date.`;
+const QUICK_QUESTIONS = ["What do I do if hardware is below 80%?", "Principal is unavailable \u2014 what are my options?", "What evidence do I need for an audit?", "TRAINING1 is tomorrow but devices aren't ready \u2014 what now?", "School hasn't responded in 3 days \u2014 what are the escalation steps?", "What makes a school Green RAG status?", "Who owns the Parent Orientation?", "What is the SLA for order delivery?"];
+const TOC = [["1", "Definitions & Success Criteria"], ["2", "Roles & Responsibilities"], ["3", "School Allocation Process"], ["4", "APM + Goal Alignment Conversation"], ["5", "Hardware Readiness SOP"], ["6", "Digital Teaching Resources SOP"], ["7", "TRAINING1 Preparedness SOP"], ["8", "Training Day 1 Execution SOP"], ["9", "Implementation Monitoring SOP"], ["10", "Parent Orientation SOP"], ["11", "RAG Governance Framework"], ["12", "Daily Field Agent Checklist"], ["13", "Audit Standards"], ["14", "SLA Reference Table"]];
+const SHEET_ID = '1n3rPL6LUONlyv70ZqhFDLibloc01RXSlp58qXTlyIcY';
+
+const API_ENDPOINT = (window.location.hostname === 'localhost' || window.location.protocol === 'file:')
+  ? 'http://localhost:3131/v1/messages'
+  : '/api/claude';
+
+const SHEET_ENDPOINT = (window.location.hostname === 'localhost' || window.location.protocol === 'file:')
+  ? 'http://localhost:3131/sheet'
+  : '/api/sheet';
+
+// ── STATE ─────────────────────────────────────────────────────
+let conversationHistory = [];
+let schoolDatabase = {};  // keyed by school_name lowercase
+let currentRole = '';
+let isLoading = false;
+let tokenCount = 0;
+const TOKEN_WARNING = 160000;
+
+// ── INIT ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderQuickButtons();
+  renderTOC();
+  loadSchoolData();
+  autoResizeTextarea();
+});
+
+function renderQuickButtons() {
+  const c = document.getElementById('quick-btns');
+  QUICK_QUESTIONS.forEach(q => {
+    const btn = document.createElement('button');
+    btn.className = 'quick-btn';
+    btn.textContent = q;
+    btn.onclick = () => { document.getElementById('chat-input').value = q; sendMessage(); };
+    c.appendChild(btn);
+  });
+}
+
+function renderTOC() {
+  const c = document.getElementById('toc-list');
+  TOC.forEach(([num, name]) => {
+    const item = document.createElement('div');
+    item.className = 'toc-item';
+    item.innerHTML = '<span class="toc-num">' + num + '</span><span class="toc-name">' + name + '</span>';
+    item.onclick = () => {
+      document.getElementById('chat-input').value = 'Explain Section ' + num + ': ' + name;
+      sendMessage();
+      if (window.innerWidth <= 768) toggleMobileSidebar();
+    };
+    c.appendChild(item);
+  });
+}
+
+// ── SCHOOL DATA ───────────────────────────────────────────────
+async function loadSchoolData() {
+  const statusEl = document.getElementById('data-status');
+  try {
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=0';
+    const resp = await fetch(SHEET_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: csvUrl })
+    });
+    if (!resp.ok) throw new Error('fetch failed');
+    const text = await resp.text();
+    parseSchoolCSV(text);
+    const count = Object.keys(schoolDatabase).length;
+    statusEl.className = 'data-status loaded';
+    statusEl.textContent = '&#10003; ' + count + ' schools loaded';
+    statusEl.innerHTML = '&#10003;&nbsp;' + count + ' schools loaded';
+  } catch(e) {
+    statusEl.className = 'data-status error';
+    statusEl.innerHTML = '&#9888;&nbsp;Data unavailable';
+    document.getElementById('banner-data-fail').classList.add('visible');
+  } finally {
+    showWelcome();
+  }
+}
+
+function parseSchoolCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
+  lines.slice(1).forEach(line => {
+    const vals = line.match(/(".*?"|[^,]+)(?=,|$)/g) || line.split(',');
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (vals[i]||'').replace(/"/g,'').trim(); });
+    if (obj.school_name) {
+      schoolDatabase[obj.school_name.toLowerCase()] = obj;
+    }
+  });
+}
+
+function findSchoolInQuestion(question) {
+  const q = question.toLowerCase();
+  for (const [key, val] of Object.entries(schoolDatabase)) {
+    if (q.includes(key)) return val;
+  }
+  return null;
+}
+
+function schoolDataToContext(school) {
+  return Object.entries(school)
+    .filter(([k]) => !['quality_profile'].includes(k))
+    .map(([k,v]) => k + ': ' + v)
+    .join('\n');
+}
+
+// ── WELCOME STATE ─────────────────────────────────────────────
+function showWelcome() {
+  const msgs = document.getElementById('messages');
+  msgs.innerHTML = `
+    <div class="welcome-state" id="welcome">
+      <div class="welcome-icon">&#128218;</div>
+      <div class="welcome-title">Onboarding Assistant</div>
+      <div class="welcome-sub">Select your role above, then ask any question about the onboarding process or a specific school.</div>
+    </div>`;
+}
+
+// ── ROLE ──────────────────────────────────────────────────────
+function setRole(role) {
+  currentRole = role;
+}
+
+// ── SYSTEM PROMPT ─────────────────────────────────────────────
+function buildSystemPrompt(schoolCtx) {
+  const roleRules = {
+    'Field Training Manager':      'Focus on TRAINING1, GAC/APM, implementation. Action-first, field-ready language.',
+    'Customer Success Manager':    'Focus on hardware, parent orientation, relationship management. Include customer communication steps.',
+    'Sales Manager':               'Include business impact and retention risk implications.',
+    'Customer Support Executive':  'Include what to communicate to the customer and expected resolution time.',
+  };
+  const roleInstruction = currentRole && roleRules[currentRole]
+    ? `\nEmployee role: ${currentRole}. ${roleRules[currentRole]}`
+    : '';
+
+  const schoolSection = schoolCtx
+    ? `\n\nSCHOOL DATA:\n${schoolCtx}`
+    : '';
+
+  return `You are an Onboarding Assistant for an EdTech company helping field employees with the Awesome Customer Onboarding SOP.
+
+RULES:
+1. Answer ONLY from the SOP or school data below. Never use outside knowledge.
+2. Keep total answer strictly under 80 words. Count your words before responding. Be ruthlessly concise.
+3. Structure: Issue (1 sentence max) then Info needed (1 sentence max if needed) then Next steps (max 3, numbered). No preamble.
+4. End every response with: Source: Section [number] — [name]
+5. On the line after source write: SOPREF: [one sentence from the SOP that supports your answer]
+6. If not in SOP: say "This is not covered in the SOP. Please seek guidance from Program Lead Mr. XYZ."
+7. Never say I think, possibly, maybe, or it seems.${roleInstruction}
+
+SOP:
+${SOP}${schoolSection}`;
+}
+
+// ── SEND MESSAGE ──────────────────────────────────────────────
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+
+  if (!currentRole) {
+    alert('Please select your role from the dropdown before asking a question.');
+    return;
+  }
+
+  // Clear welcome
+  const welcome = document.getElementById('welcome');
+  if (welcome) welcome.remove();
+
+  addUserMessage(text);
+  input.value = '';
+  input.style.height = 'auto';
+  conversationHistory.push({ role: 'user', content: text });
+
+  const typingId = showTyping();
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+
+  // Find school context
+  const school = findSchoolInQuestion(text);
+  const schoolCtx = school ? schoolDataToContext(school) : null;
+
+  try {
+    console.log('Sending to:', API_ENDPOINT, 'Role:', currentRole, 'School ctx:', !!schoolCtx);
+    const resp = await Promise.race([
+      fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-opus-4-5',
+          max_tokens: 450,
+          system: buildSystemPrompt(schoolCtx),
+          messages: conversationHistory
+        })
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
+    ]);
+
+    const data = await resp.json();
+    console.log('Full API response:', JSON.stringify(data).substring(0, 500));
+    if (data.type === 'error' || data.error) {
+      throw new Error('API error: ' + (data.error ? data.error.message : 'unknown'));
+    }
+    if (!data.content || !data.content[0] || !data.content[0].text) {
+      throw new Error('empty — raw: ' + JSON.stringify(data).substring(0, 200));
+    }
+    const reply = data.content[0].text;
+    console.log('API reply:', reply.substring(0, 300));
+    conversationHistory.push({ role: 'assistant', content: reply });
+
+    // Token tracking
+    const totalChars = conversationHistory.reduce((a,m) => a + m.content.length, 0);
+    tokenCount = Math.round(totalChars / 4);
+    if (tokenCount > TOKEN_WARNING) {
+      document.getElementById('banner-token').classList.add('visible');
+    }
+
+    removeTyping(typingId);
+    addAssistantMessage(reply);
+
+  } catch(e) {
+    removeTyping(typingId);
+    console.error('API error:', e);
+    let msg;
+    if (e.message === 'timeout') {
+      msg = 'Request timed out after 30 seconds. Please try again.';
+    } else if (e.message === 'empty') {
+      msg = 'Claude returned an empty response. Please try rephrasing.';
+    } else if (e.message.includes('fetch') || e.message.includes('network') || e.message.includes('Failed')) {
+      msg = 'Cannot reach the API. Make sure proxy.js is running (node proxy.js) and try again.';
+    } else {
+      msg = 'Error: ' + e.message + ' (Check browser console F12 for details)';
+    }
+    addErrorMessage(msg);
+  }
+
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+}
+
+// ── RENDER MESSAGES ───────────────────────────────────────────
+function addUserMessage(text) {
+  const msgs = document.getElementById('messages');
+  const roleInitials = currentRole ? currentRole.split(' ').map(w=>w[0]).join('').slice(0,3) : 'ME';
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = `
+    <div class="msg-avatar">${roleInitials}</div>
+    <div class="msg-content">
+      <div class="msg-bubble">${escHtml(text)}</div>
+    </div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+}
+
+function addAssistantMessage(text) {
+  // Parse source
+  const sourceMatch = text.match(/Source:\s*(Section[^\n]+)/i);
+  const sopTextMatch = text.match(/SOP_TEXT_USED:\s*"([^"]+)"/);
+
+  let mainText = text
+    .replace(/Source:\s*Section[^\n\r]+/gi, '')
+    .replace(/SOPREF:\s*.+/gi, '')
+    .trim();
+
+  const source = sourceMatch ? sourceMatch[1].trim() : null;
+  const sopSnippet = sopTextMatch ? sopTextMatch[1].trim() : null;
+
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+
+  let sourceHtml = source ? `<div class="msg-source"><span class="source-label">SOURCE</span>${escHtml(source)}</div>` : '';
+  let sopHtml = sopSnippet ? `<details class="sop-expand"><summary>View SOP text used</summary><div class="sop-expand-body">${escHtml(sopSnippet)}</div></details>` : '';
+
+  div.innerHTML = `
+    <div class="msg-avatar">OA</div>
+    <div class="msg-content">
+      <div class="msg-role-tag">Onboarding Assistant · ${escHtml(currentRole)}</div>
+      <div class="msg-bubble">
+        ${renderMarkdown(mainText)}
+        ${sourceHtml}
+      </div>
+      ${sopHtml}
+    </div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+}
+
+function addErrorMessage(text) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  div.innerHTML = `
+    <div class="msg-avatar">OA</div>
+    <div class="msg-content">
+      <div class="msg-bubble" style="border-color:#F0C0CC;color:var(--maroon)">${escHtml(text)}</div>
+    </div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+}
+
+function showTyping() {
+  const msgs = document.getElementById('messages');
+  const id = 'typing-' + Date.now();
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  div.id = id;
+  div.innerHTML = `
+    <div class="msg-avatar">OA</div>
+    <div class="msg-content">
+      <div class="msg-bubble">
+        <div class="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>`;
+  msgs.appendChild(div);
+  scrollBottom();
+  return id;
+}
+
+function removeTyping(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function scrollBottom() {
+  const msgs = document.getElementById('messages');
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ── NEW CONVERSATION ──────────────────────────────────────────
+function newConversation() {
+  conversationHistory = [];
+  tokenCount = 0;
+  document.getElementById('banner-token').classList.remove('visible');
+  showWelcome();
+}
+
+// ── SIDEBAR TOGGLE ────────────────────────────────────────────
+let sidebarCollapsed = false;
+function toggleDesktopSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const toggle  = document.getElementById('sidebar-toggle');
+  sidebarCollapsed = !sidebarCollapsed;
+  sidebar.classList.toggle('collapsed', sidebarCollapsed);
+  toggle.textContent = sidebarCollapsed ? '›' : '‹';
+}
+
+function toggleMobileSidebar() {
+  const sidebar  = document.getElementById('sidebar');
+  const overlay  = document.getElementById('sidebar-overlay');
+  const isOpen   = sidebar.classList.contains('mobile-open');
+  sidebar.classList.toggle('mobile-open', !isOpen);
+  overlay.classList.toggle('visible', !isOpen);
+}
+
+// ── INPUT HELPERS ─────────────────────────────────────────────
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResizeTextarea() {
+  const ta = document.getElementById('chat-input');
+  ta.addEventListener('input', () => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+  });
+}
+
+function renderMarkdown(str) {
+  // Convert **bold** to <strong>
+  let html = String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n(\d+\. )/g, '<br><span style="display:inline-block;min-width:18px">$1</span>')
+    .replace(/\n- /g, '<br>&bull; ')
+    .replace(/\n/g, '<br>');
+  return html;
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;')
+    .replace(/\n/g,'<br>');
+}
+</script>
+</body>
+</html>
