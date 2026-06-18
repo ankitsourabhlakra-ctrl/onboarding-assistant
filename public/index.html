@@ -1440,14 +1440,29 @@ Rules:
 // ── QUERY EXECUTOR (pure JavaScript, no API call) ─────────────
 function executeQuery(spec) {
   const TODAY = new Date();
-  // Start with employee-filtered list if active
-  let schools = (activeSchoolList && activeSchoolList.length > 0 && currentEmployee)
-    ? [...activeSchoolList]
-    : Object.values(schoolDatabase);
+  console.log('executeQuery called. currentEmployee:', currentEmployee, 
+              'currentSchool:', currentSchool,
+              'activeSchoolList length:', activeSchoolList.length,
+              'query_type:', spec.query_type);
+
+  // Always start with full database and apply employee filter directly
+  let schools = Object.values(schoolDatabase);
+
+  // Apply employee filter if specific employee selected
+  if (currentEmployee && currentEmployee !== 'Overall' && currentRoleLabel) {
+    const empField = currentRoleLabel === 'FTM' ? 'assigned_ftm' : 
+                     currentRoleLabel === 'CSM' ? 'assigned_csm' : null;
+    if (empField) {
+      schools = schools.filter(s => s[empField] === currentEmployee);
+    }
+  }
+
+  console.log('After employee filter (', currentEmployee, '):', schools.length, 'schools');
 
   // Pre-filter by selected school if active
   if (currentSchool) {
     schools = schools.filter(s => s.school_name === currentSchool);
+    console.log('After school filter:', schools.length);
   }
 
   // School-specific lookup
