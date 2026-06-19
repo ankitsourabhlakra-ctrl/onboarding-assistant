@@ -2,552 +2,669 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Onboarding Assistant</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --ivory:   #FFFFF0;
-  --teal:    #007B8A;
-  --teal-lt: #E6F4F6;
-  --teal-dk: #005F6B;
-  --maroon:  #800020;
+  --ivory:     #FFFFF0;
+  --teal:      #007B8A;
+  --teal-lt:   #E6F4F6;
+  --teal-dk:   #005F6B;
+  --maroon:    #800020;
   --maroon-lt: #FCE8ED;
-  --text:    #1A1A1A;
-  --text-2:  #4A4A4A;
-  --text-3:  #7A7A7A;
-  --border:  #D8D8C8;
-  --border-2:#C0C0B0;
-  --white:   #FFFFFF;
-  --sans:    'IBM Plex Sans', sans-serif;
-  --mono:    'IBM Plex Mono', monospace;
+  --text:      #1A1A1A;
+  --text-2:    #4A4A4A;
+  --text-3:    #7A7A7A;
+  --border:    #D8D8C8;
+  --border-2:  #C0C0B0;
+  --white:     #FFFFFF;
+  --sans:      'IBM Plex Sans', sans-serif;
+  --mono:      'IBM Plex Mono', monospace;
   --sidebar-w: 260px;
   --header-h:  56px;
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; }
-body { font-family: var(--sans); background: var(--ivory); color: var(--text); font-size: 14px; line-height: 1.5; display: flex; flex-direction: column; overflow: hidden; }
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; padding: 0; }
+body {
+  font-family: var(--sans); background: var(--ivory); color: var(--text);
+  font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+}
 
-/* ── HEADER ── */
-.header {
-  background: var(--teal);
-  color: white;
+/* ════════════════════════════════════════════════════════════
+   APP SHELL — single column flex, everything else nests inside
+   ════════════════════════════════════════════════════════════ */
+.app-shell {
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
-  border-bottom: 2px solid var(--teal-dk);
-  z-index: 200;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
-.header-row1 {
+
+/* ── HEADER ── */
+.app-header {
+  flex: 0 0 auto;
+  background: var(--teal);
+  color: white;
+  border-bottom: 2px solid var(--teal-dk);
+  position: relative;
+  z-index: 250;
+}
+.header-top {
   height: var(--header-h);
   display: flex;
   align-items: center;
   padding: 0 16px;
   gap: 10px;
 }
-.header-row2 {
-  padding: 6px 12px 8px;
-  border-top: 1px solid rgba(255,255,255,0.15);
+.hamburger-btn {
+  display: none;
+  background: transparent; border: none; color: white;
+  font-size: 20px; cursor: pointer; padding: 6px;
+  width: 34px; height: 34px; flex-shrink: 0;
+  align-items: center; justify-content: center; border-radius: 4px;
 }
-.school-search-input-mobile {
-  width: 100%;
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.3);
-  color: white;
-  font-family: var(--sans);
-  font-size: 13px;
-  padding: 7px 12px;
-  border-radius: 6px;
-  outline: none;
-  min-height: 38px;
-}
-.school-search-input-mobile::placeholder { color: rgba(255,255,255,0.6); }
-.school-search-input-mobile:focus { background: rgba(255,255,255,0.25); }
-.header-logo {
-  width: 32px; height: 32px; border-radius: 4px;
-  background: white; display: flex; align-items: center; justify-content: center;
+.hamburger-btn:active { background: rgba(255,255,255,0.15); }
+.brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; min-width: 0; }
+.brand-logo {
+  width: 32px; height: 32px; border-radius: 4px; background: white;
+  display: flex; align-items: center; justify-content: center;
   color: var(--teal); font-family: var(--mono); font-weight: 600; font-size: 13px;
   flex-shrink: 0;
 }
-.header-title-wrap { flex-shrink: 0; }
-.header-title { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
-.header-sub   { font-size: 11px; opacity: 0.75; font-family: var(--mono); }
-.header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
-.role-select {
-  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
-  color: white; font-family: var(--sans); font-size: 12px;
-  padding: 5px 8px; border-radius: 4px; outline: none; cursor: pointer;
-  min-height: 34px;
-}
-.role-select option { background: var(--teal-dk); color: white; }
-.new-chat-btn {
-  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
-  color: white; font-family: var(--sans); font-size: 12px; font-weight: 500;
-  padding: 5px 10px; border-radius: 4px; cursor: pointer; white-space: nowrap;
-  min-height: 34px; transition: background 0.15s;
-}
-.new-chat-btn:hover { background: rgba(255,255,255,0.25); }
-.hamburger {
-  display: none; background: transparent; border: none; color: white;
-  font-size: 20px; cursor: pointer; padding: 6px; min-width: 36px;
-  align-items: center; justify-content: center; flex-shrink: 0;
+.brand-text { min-width: 0; }
+.brand-title { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; white-space: nowrap; }
+.brand-sub   { font-size: 11px; opacity: 0.75; font-family: var(--mono); white-space: nowrap; }
+
+.header-controls {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 .data-status {
-  font-family: var(--mono); font-size: 10px; padding: 3px 7px;
-  border-radius: 3px; white-space: nowrap;
+  font-family: var(--mono); font-size: 10px; padding: 4px 8px;
+  border-radius: 3px; white-space: nowrap; flex-shrink: 0;
+  background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9);
 }
-.data-status.loaded  { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.9); }
-.data-status.loading { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
-.data-status.error   { background: #FDE8ED; color: var(--maroon); }
+.data-status.error { background: #FDE8ED; color: var(--maroon); }
 
-/* SCHOOL SEARCH */
-.school-search-wrap { position: relative; }
-.school-search-input {
-  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+.ctrl-select {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
   color: white; font-family: var(--sans); font-size: 12px;
-  padding: 5px 8px; border-radius: 4px; outline: none; width: 160px; min-height: 34px;
+  padding: 6px 8px; border-radius: 4px; outline: none; cursor: pointer;
+  height: 34px;
+  max-width: 170px;
+  text-overflow: ellipsis;
 }
-.school-search-input::placeholder { color: rgba(255,255,255,0.5); }
-.school-search-input:focus { background: rgba(255,255,255,0.25); }
+.ctrl-select option { background: var(--teal-dk); color: white; }
+
+.school-picker { position: relative; flex-shrink: 0; }
+.school-picker input {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white; font-family: var(--sans); font-size: 12px;
+  padding: 6px 10px; border-radius: 4px; outline: none;
+  height: 34px; width: 170px;
+}
+.school-picker input::placeholder { color: rgba(255,255,255,0.55); }
+.school-picker input:focus { background: rgba(255,255,255,0.28); }
 .school-dropdown {
-  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-  background: white; border: 1px solid var(--border); border-radius: 4px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-height: 260px; overflow-y: auto;
-  z-index: 500; display: none; min-width: 220px;
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+  background: white; border: 1px solid var(--border); border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  max-height: 280px; overflow-y: auto; z-index: 600;
+  display: none; min-width: 240px;
 }
 .school-dropdown.open { display: block; }
 .school-option {
-  padding: 8px 12px; font-size: 12px; color: var(--text); cursor: pointer;
-  border-bottom: 1px solid var(--border); transition: background 0.1s;
-  display: flex; align-items: center; gap: 6px;
+  padding: 9px 12px; font-size: 12px; color: var(--text); cursor: pointer;
+  border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 7px;
 }
 .school-option:last-child { border-bottom: none; }
 .school-option:hover { background: var(--teal-lt); }
-.school-option.all-option { color: var(--teal); font-weight: 500; font-style: italic; }
+.school-option.all-option { color: var(--teal); font-weight: 600; font-style: italic; }
 .school-rag { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .rag-Red   { background: #e74c3c; }
 .rag-Amber { background: #f39c12; }
 .rag-Green { background: #27ae60; }
 .rag-Grey  { background: #aaa; }
 
-/* ── ACTIVE FILTER BAR ── */
-.active-filter-bar {
-  background: rgba(0,123,138,0.08); border-bottom: 1px solid var(--border);
-  padding: 5px 16px; font-size: 11px; color: var(--teal-dk);
-  font-family: var(--mono); display: none; align-items: center; gap: 6px;
-  flex-shrink: 0; flex-wrap: wrap;
+.new-chat-btn {
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+  color: white; font-family: var(--sans); font-size: 12px; font-weight: 500;
+  padding: 0 12px; height: 34px; border-radius: 4px; cursor: pointer;
+  white-space: nowrap; flex-shrink: 0; transition: background 0.15s;
 }
-.active-filter-bar.visible { display: flex; }
+.new-chat-btn:hover { background: rgba(255,255,255,0.25); }
+
+/* Desktop school picker hidden until role/employee active */
+.school-picker-desktop { display: none; }
+.app-header.has-school-picker .school-picker-desktop { display: block; }
+
+/* Mobile second header row — hidden by default, only shown on small screens
+   when school picker is active. CSS-only, no JS viewport checks. */
+.header-school-row {
+  display: none;
+  padding: 8px 12px 10px;
+  border-top: 1px solid rgba(255,255,255,0.15);
+}
+.header-school-row .school-picker { width: 100%; }
+.header-school-row .school-picker input { width: 100%; }
+
+/* ── BANNERS ── */
+.banner {
+  flex: 0 0 auto;
+  padding: 9px 16px; font-size: 12px; font-weight: 500;
+  display: none; align-items: center; gap: 8px;
+  background: var(--maroon-lt); color: var(--maroon); border-bottom: 1px solid #F0C0CC;
+}
+.banner.visible { display: flex; }
+.banner-dismiss {
+  margin-left: auto; background: transparent; border: none; cursor: pointer;
+  font-size: 16px; color: inherit; width: 24px; height: 24px;
+}
+
+/* ── ACTIVE FILTER BAR ── */
+.filter-bar {
+  flex: 0 0 auto;
+  background: rgba(0,123,138,0.07); border-bottom: 1px solid var(--border);
+  padding: 6px 16px; font-size: 11px; color: var(--teal-dk);
+  font-family: var(--mono); display: none; align-items: center; gap: 6px;
+  flex-wrap: wrap;
+}
+.filter-bar.visible { display: flex; }
 .filter-tag {
   background: var(--teal-lt); border: 1px solid var(--teal);
-  padding: 2px 8px; border-radius: 10px; font-size: 10px; color: var(--teal);
+  padding: 2px 9px; border-radius: 10px; font-size: 10px; color: var(--teal);
 }
 .filter-clear { margin-left: auto; cursor: pointer; color: var(--maroon); font-size: 10px; }
 .filter-clear:hover { text-decoration: underline; }
 
-/* ── BANNERS ── */
-.banner {
-  padding: 9px 16px; font-size: 12px; font-weight: 500;
-  display: none; align-items: center; gap: 8px; flex-shrink: 0;
+/* ════════════════════════════════════════════════════════════
+   APP BODY — sidebar + chat, the row that must fill remaining space
+   ════════════════════════════════════════════════════════════ */
+.app-body {
+  flex: 1 1 auto;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
 }
-.banner.visible { display: flex; }
-.banner-warn { background: var(--maroon-lt); color: var(--maroon); border-bottom: 1px solid #F0C0CC; }
-.banner-dismiss { margin-left: auto; background: transparent; border: none; cursor: pointer; font-size: 16px; color: inherit; }
-
-/* ── APP BODY ── */
-.app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
 
 /* ── SIDEBAR ── */
-.sidebar {
-  width: var(--sidebar-w); flex-shrink: 0;
-  background: var(--white); border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; overflow: hidden;
-  transition: width 0.25s ease; z-index: 100;
+.sidebar-backdrop {
+  display: none;
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 240;
 }
-.sidebar.collapsed { width: 0; }
-.sidebar-toggle {
+.sidebar-backdrop.visible { display: block; }
+
+.app-sidebar {
+  flex: 0 0 var(--sidebar-w);
+  width: var(--sidebar-w);
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  transition: flex-basis 0.2s ease, width 0.2s ease;
+}
+.app-sidebar.collapsed { flex-basis: 0; width: 0; border-right: none; }
+
+.sidebar-collapse-btn {
   position: absolute; left: var(--sidebar-w); top: 50%; transform: translateY(-50%);
   background: var(--white); border: 1px solid var(--border); border-left: none;
   width: 18px; height: 48px; cursor: pointer; display: flex; align-items: center;
-  justify-content: center; color: var(--text-3); font-size: 10px; z-index: 101;
-  transition: left 0.25s ease; border-radius: 0 4px 4px 0;
+  justify-content: center; color: var(--text-3); font-size: 10px; z-index: 60;
+  transition: left 0.2s ease; border-radius: 0 4px 4px 0;
 }
-.sidebar.collapsed + .sidebar-toggle { left: 0; }
+.app-sidebar.collapsed ~ .sidebar-collapse-btn { left: 0; }
 
-/* SIDEBAR TABS */
 .sidebar-tabs {
+  flex: 0 0 auto;
   display: flex; border-bottom: 1px solid var(--border);
-  background: var(--white); flex-shrink: 0;
 }
 .sidebar-tab {
   flex: 1; padding: 10px 4px; font-size: 11px; font-weight: 500;
   font-family: var(--sans); color: var(--text-3); background: transparent;
   border: none; border-bottom: 2px solid transparent; cursor: pointer;
-  transition: all 0.15s; min-height: 40px;
+  height: 40px;
 }
 .sidebar-tab:hover { color: var(--teal); }
 .sidebar-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
 
-/* SIDEBAR PANELS */
-.sidebar-panel {
-  flex: 1;
-  overflow-y: auto;
+.sidebar-content {
+  flex: 1 1 auto;
   min-height: 0;
-  max-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
-#spanel-quick { padding: 0; }
-#spanel-toc   { padding: 12px; }
-#spanel-about { padding: 16px; }
+.sidebar-pane {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+.sidebar-pane[hidden] { display: none; }
+
+#pane-quick { padding: 0; }
+#pane-toc   { padding: 12px; }
+#pane-about { padding: 16px; }
+
 .sidebar-label {
   font-family: var(--mono); font-size: 10px; font-weight: 500;
   color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em;
-  padding: 12px 12px 6px; display: block;
+  padding: 12px 12px 6px;
 }
-#spanel-toc .sidebar-label { padding: 0 0 8px; }
+#pane-toc .sidebar-label { padding: 0 0 8px; }
 
-/* QUICK BUTTONS */
 .quick-btn {
-  display: block; width: 100%; text-align: left; padding: 8px 12px;
+  display: block; width: 100%; text-align: left; padding: 10px 12px;
   background: transparent; border: none; border-bottom: 1px solid var(--border);
   font-family: var(--sans); font-size: 12px; color: var(--text-2);
-  cursor: pointer; min-height: 44px; transition: all 0.1s; line-height: 1.4;
+  cursor: pointer; line-height: 1.4;
 }
 .quick-btn:hover { background: var(--teal-lt); color: var(--teal); }
 .quick-btn:last-child { border-bottom: none; }
 
-/* TOC */
 .toc-item {
-  display: flex; align-items: center; gap: 8px; padding: 7px 6px;
-  border-radius: 4px; cursor: pointer; transition: background 0.1s; min-height: 40px;
-  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px; padding: 9px 6px;
+  border-radius: 4px; cursor: pointer; border-bottom: 1px solid var(--border);
 }
 .toc-item:last-child { border-bottom: none; }
 .toc-item:hover { background: var(--teal-lt); }
-.toc-num { font-family: var(--mono); font-size: 10px; color: var(--teal); font-weight: 500; flex-shrink: 0; width: 20px; }
+.toc-num  { font-family: var(--mono); font-size: 10px; color: var(--teal); font-weight: 500; flex-shrink: 0; width: 20px; }
 .toc-name { font-size: 12px; color: var(--text-2); line-height: 1.4; }
 
-/* ABOUT */
 .about-content { font-size: 12px; color: var(--text-2); line-height: 1.6; }
 .about-section { margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
 .about-section:last-child { border-bottom: none; margin-bottom: 0; }
-.about-heading { font-size: 10px; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--mono); margin-bottom: 7px; }
+.about-heading {
+  font-size: 10px; font-weight: 700; color: var(--teal); text-transform: uppercase;
+  letter-spacing: 0.08em; font-family: var(--mono); margin-bottom: 7px;
+}
 .about-sub { font-size: 11px; font-weight: 600; color: var(--text); margin: 8px 0 3px; }
-.about-examples { background: var(--ivory); border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px; margin-top: 4px; font-size: 11px; color: var(--text-3); font-family: var(--mono); }
+.about-examples {
+  background: var(--ivory); border: 1px solid var(--border); border-radius: 4px;
+  padding: 6px 10px; margin-top: 4px; font-size: 11px; color: var(--text-3); font-family: var(--mono);
+}
 .about-examples div { padding: 2px 0; }
 .about-examples div::before { content: "→ "; color: var(--teal); }
 .about-step { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 7px; }
-.about-step-num { width: 18px; height: 18px; border-radius: 50%; background: var(--teal); color: white; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.about-step-num {
+  width: 18px; height: 18px; border-radius: 50%; background: var(--teal); color: white;
+  font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
 .about-list { padding-left: 14px; margin: 0; }
 .about-list li { margin-bottom: 5px; }
 .about-links { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-.about-link { display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; background: var(--teal-lt); border: 1px solid var(--teal); border-radius: 4px; color: var(--teal); font-size: 11px; font-weight: 500; text-decoration: none; transition: all 0.15s; }
+.about-link {
+  display: inline-flex; align-items: center; gap: 4px; padding: 6px 11px;
+  background: var(--teal-lt); border: 1px solid var(--teal); border-radius: 4px;
+  color: var(--teal); font-size: 11px; font-weight: 500; text-decoration: none;
+}
 .about-link:hover { background: var(--teal); color: white; }
 
-/* ── MAIN CHAT ── */
-.chat-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-.messages { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+/* ── CHAT PANEL ── */
+.chat-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
-/* WELCOME */
-.welcome-state { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; text-align: center; padding: 40px 20px; color: var(--text-3); }
-.welcome-icon { width: 52px; height: 52px; border-radius: 8px; background: var(--teal-lt); border: 1px solid var(--teal); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 14px; color: var(--teal); }
+.chat-messages {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+.welcome-state {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 40px 20px; color: var(--text-3);
+}
+.welcome-icon {
+  width: 52px; height: 52px; border-radius: 8px; background: var(--teal-lt);
+  border: 1px solid var(--teal); display: flex; align-items: center; justify-content: center;
+  font-size: 22px; margin-bottom: 14px; color: var(--teal);
+}
 .welcome-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
 .welcome-sub { font-size: 13px; max-width: 340px; line-height: 1.6; }
 
-/* SKELETON */
-.skeleton-wrap { padding: 20px 24px; }
-.skeleton-line { height: 14px; background: linear-gradient(90deg,#E8E8D8 25%,#D8D8C8 50%,#E8E8D8 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 3px; margin-bottom: 10px; }
+.skeleton-wrap { padding: 4px 0; }
+.skeleton-line {
+  height: 14px; border-radius: 3px; margin-bottom: 10px;
+  background: linear-gradient(90deg,#E8E8D8 25%,#D8D8C8 50%,#E8E8D8 75%);
+  background-size: 200% 100%; animation: shimmer 1.5s infinite;
+}
 .skeleton-line:nth-child(2) { width: 75%; }
 .skeleton-line:nth-child(3) { width: 90%; }
-@keyframes shimmer { 0%{background-position:200% 0}100%{background-position:-200% 0} }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-/* MESSAGES */
 .msg { display: flex; gap: 10px; max-width: 860px; }
 .msg.user      { flex-direction: row-reverse; align-self: flex-end; }
 .msg.assistant { align-self: flex-start; width: 100%; }
-.msg-avatar { width: 30px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 10px; font-weight: 500; flex-shrink: 0; }
+.msg-avatar {
+  width: 30px; height: 30px; border-radius: 4px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+}
 .msg.user .msg-avatar      { background: var(--teal); color: white; }
 .msg.assistant .msg-avatar { background: var(--ivory); border: 1px solid var(--border); color: var(--teal); }
 .msg-content { flex: 1; min-width: 0; }
-.msg-bubble { padding: 10px 14px; border-radius: 6px; font-size: 13px; line-height: 1.65; }
+.msg-bubble {
+  padding: 10px 14px; border-radius: 6px; font-size: 13px; line-height: 1.65;
+  overflow-wrap: break-word;
+}
 .msg.user .msg-bubble      { background: var(--teal); color: white; border-radius: 6px 2px 6px 6px; }
 .msg.assistant .msg-bubble { background: white; border: 1px solid var(--border); border-radius: 2px 6px 6px 6px; color: var(--text); }
-.msg-role-tag { font-family: var(--mono); font-size: 10px; color: var(--text-3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-.msg-source { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; color: var(--teal); display: flex; align-items: center; gap: 6px; }
+.msg-role-tag {
+  font-family: var(--mono); font-size: 10px; color: var(--text-3); margin-bottom: 4px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.msg-source {
+  margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);
+  font-family: var(--mono); font-size: 10px; color: var(--teal);
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
 .source-label { opacity: 0.6; }
 .sop-expand { margin-top: 6px; }
-.sop-expand summary { font-family: var(--mono); font-size: 10px; color: var(--text-3); cursor: pointer; padding: 4px 0; list-style: none; display: flex; align-items: center; gap: 4px; }
+.sop-expand summary {
+  font-family: var(--mono); font-size: 10px; color: var(--text-3); cursor: pointer;
+  padding: 4px 0; list-style: none; display: flex; align-items: center; gap: 4px;
+}
+.sop-expand summary::-webkit-details-marker { display: none; }
 .sop-expand summary::before { content: "▶"; font-size: 8px; }
 .sop-expand[open] summary::before { content: "▼"; }
-.sop-expand-body { background: var(--ivory); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; font-size: 11px; font-family: var(--mono); color: var(--text-2); line-height: 1.6; margin-top: 4px; white-space: pre-wrap; }
+.sop-expand-body {
+  background: var(--ivory); border: 1px solid var(--border); border-radius: 4px;
+  padding: 10px 12px; font-size: 11px; font-family: var(--mono); color: var(--text-2);
+  line-height: 1.6; margin-top: 4px; white-space: pre-wrap;
+}
 .typing-indicator { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
 .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); animation: bounce 1.2s infinite; }
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-@keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:0.4}30%{transform:translateY(-5px);opacity:1} }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0);opacity:0.4} 30%{transform:translateY(-5px);opacity:1} }
 
-/* ── INPUT ── */
-.input-area { padding: 12px 24px 16px; background: white; border-top: 1px solid var(--border); flex-shrink: 0; }
+.chat-input-bar {
+  flex: 0 0 auto;
+  padding: 12px 24px 16px;
+  background: white;
+  border-top: 1px solid var(--border);
+}
 .input-row { display: flex; gap: 8px; align-items: flex-end; }
-.input-wrap { flex: 1; background: var(--ivory); border: 1px solid var(--border-2); border-radius: 6px; display: flex; align-items: flex-end; padding: 9px 12px; transition: border-color 0.15s; }
+.input-wrap {
+  flex: 1; min-width: 0;
+  background: var(--ivory); border: 1px solid var(--border-2); border-radius: 6px;
+  display: flex; align-items: flex-end; padding: 9px 12px;
+}
 .input-wrap:focus-within { border-color: var(--teal); }
-.chat-textarea { flex: 1; background: transparent; border: none; outline: none; font-family: var(--sans); font-size: 14px; color: var(--text); resize: none; line-height: 1.5; min-height: 22px; max-height: 120px; overflow-y: auto; }
+.chat-textarea {
+  flex: 1; background: transparent; border: none; outline: none;
+  font-family: var(--sans); font-size: 14px; color: var(--text);
+  resize: none; line-height: 1.5; min-height: 22px; max-height: 120px; overflow-y: auto;
+}
 .chat-textarea::placeholder { color: var(--text-3); }
-.send-btn { width: 44px; height: 44px; background: var(--teal); border: none; border-radius: 6px; color: white; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
+.send-btn {
+  width: 44px; height: 44px; background: var(--teal); border: none; border-radius: 6px;
+  color: white; font-size: 16px; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
 .send-btn:hover { background: var(--teal-dk); }
 .send-btn:disabled { background: var(--border); cursor: not-allowed; }
 .input-hint { font-size: 10px; color: var(--text-3); font-family: var(--mono); margin-top: 6px; text-align: center; }
 
-/* MOBILE OVERLAY */
-.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
-
-/* SCROLLBAR */
-::-webkit-scrollbar { width: 4px; }
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
 
-/* ── MOBILE ── */
+/* ════════════════════════════════════════════════════════════
+   MOBILE  (≤768px)
+   ════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  :root { --header-h: 48px; }
+  :root { --header-h: 50px; }
 
-  /* Sidebar as drawer */
-  .sidebar {
+  .hamburger-btn { display: flex; }
+  .brand-text { display: none; }
+  .data-status { display: none; }
+
+  .header-controls { gap: 6px; }
+  .ctrl-select { max-width: 38vw; font-size: 11px; padding: 5px 6px; height: 32px; }
+  .new-chat-btn { padding: 0 8px; height: 32px; font-size: 11px; }
+
+  /* desktop school picker hidden, mobile row shown when active (handled by .has-school-picker rule above) */
+  .header-school-row .school-picker input { font-size: 13px; }
+
+  /* sidebar becomes an overlay drawer */
+  .app-sidebar {
     position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    height: 100vh;
+    top: 0; bottom: 0; left: 0;
+    width: 85vw; max-width: 320px;
+    flex-basis: auto;
     transform: translateX(-100%);
     transition: transform 0.25s ease;
-    z-index: 150;
-    width: 85vw;
-    max-width: 300px;
-    display: flex;
-    flex-direction: column;
+    z-index: 260;
+    box-shadow: 2px 0 16px rgba(0,0,0,0.2);
   }
-  .sidebar.mobile-open { transform: translateX(0); }
-  .sidebar-overlay.visible { display: block; }
-  .sidebar-toggle { display: none; }
-  .hamburger { display: flex; }
+  .app-sidebar.mobile-open { transform: translateX(0); }
+  .sidebar-collapse-btn { display: none; }
 
-  /* Header row1 — single line on mobile */
-  .header-row1 { padding: 0 8px; gap: 6px; height: var(--header-h); }
-  .header-title-wrap { display: none; }
-  .data-status { display: none; }
-  .header-desktop-only { display: none !important; }
-  .header-right { gap: 5px; flex: 1; justify-content: flex-end; }
-  .role-select { font-size: 11px; padding: 4px 6px; min-width: 0; flex: 1; max-width: 160px; }
-  #employee-select { font-size: 11px; padding: 4px 6px; min-width: 0; flex: 1; max-width: 130px; }
-  .new-chat-btn { font-size: 11px; padding: 4px 8px; white-space: nowrap; }
-
-  /* Chat */
-  .messages { padding: 12px; }
-  .input-area { padding: 8px 10px 10px; }
-  .msg-bubble { font-size: 12px; }
-
-  /* Filter bar */
-  .active-filter-bar { padding: 4px 10px; font-size: 10px; gap: 4px; }
+  .chat-messages { padding: 14px; }
+  .chat-input-bar { padding: 10px 12px 12px; }
+  .msg { max-width: 100%; }
+  .input-hint { display: none; }
 }
 
-@media (max-width: 480px) {
-  .role-select { max-width: 120px; }
-  #employee-select { max-width: 100px; }
-  .school-search-wrap { display: none; }
-  .new-chat-btn { display: none; }
-  .input-hint { display: none; }
+@media (max-width: 420px) {
+  .ctrl-select { max-width: 32vw; }
+  .new-chat-btn span.label { display: none; }
 }
 </style>
 </head>
 <body>
+<div class="app-shell">
 
-<!-- HEADER -->
-<header class="header">
-  <div class="header-row1">
-    <button class="hamburger" id="hamburger" onclick="toggleMobileSidebar()" aria-label="Menu">&#9776;</button>
-    <div class="header-logo">OA</div>
-    <div class="header-title-wrap">
-      <div class="header-title">Onboarding Assistant</div>
-      <div class="header-sub">Awesome Customer Onboarding SOP</div>
-    </div>
-    <div class="header-right">
-      <span class="data-status loading" id="data-status">&#9679; Loading data...</span>
-      <select class="role-select" id="role-select" onchange="onRoleChange(this.value)">
-        <option value="">Select role</option>
-        <option value="FTM">Field Training Manager</option>
-        <option value="CSM">Customer Success Manager</option>
-        <option value="CSE">Customer Support Executive</option>
-      </select>
-      <select class="role-select" id="employee-select" onchange="onEmployeeChange(this.value)" style="display:none;min-width:140px">
-        <option value="">Select employee</option>
-      </select>
-      <div class="school-search-wrap header-desktop-only" id="school-search-wrap-desktop" style="display:none">
-        <input type="text" id="school-search-input" class="school-search-input"
-          placeholder="All schools — type to filter" autocomplete="off"
-          oninput="filterSchoolList(this.value)"
-          onfocus="showSchoolList()"
-          onblur="setTimeout(hideSchoolList, 200)">
-        <div class="school-dropdown" id="school-dropdown"></div>
+  <!-- HEADER -->
+  <header class="app-header" id="app-header">
+    <div class="header-top">
+      <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileSidebar()" aria-label="Menu">&#9776;</button>
+      <div class="brand">
+        <div class="brand-logo">OA</div>
+        <div class="brand-text">
+          <div class="brand-title">Onboarding Assistant</div>
+          <div class="brand-sub">Awesome Customer Onboarding SOP</div>
+        </div>
       </div>
-      <button class="new-chat-btn" onclick="newConversation()">+ New Conversation</button>
+      <div class="header-controls">
+        <span class="data-status" id="data-status">Loading data...</span>
+
+        <select class="ctrl-select" id="role-select" onchange="onRoleChange(this.value)">
+          <option value="">Select role</option>
+          <option value="FTM">Field Training Manager</option>
+          <option value="CSM">Customer Success Manager</option>
+          <option value="CSE">Customer Support Executive</option>
+        </select>
+
+        <select class="ctrl-select" id="employee-select" onchange="onEmployeeChange(this.value)" style="display:none">
+          <option value="">Select employee</option>
+        </select>
+
+        <div class="school-picker school-picker-desktop" id="school-picker-desktop">
+          <input type="text" id="school-input-desktop" autocomplete="off"
+            placeholder="All schools — type to filter"
+            oninput="onSchoolInput(this.value)"
+            onfocus="openSchoolDropdown()"
+            onblur="setTimeout(closeSchoolDropdown, 200)">
+          <div class="school-dropdown" id="school-dropdown-desktop"></div>
+        </div>
+
+        <button class="new-chat-btn" onclick="newConversation()"><span class="label">+ New Conversation</span></button>
+      </div>
     </div>
+
+    <div class="header-school-row" id="header-school-row">
+      <div class="school-picker">
+        <input type="text" id="school-input-mobile" autocomplete="off"
+          placeholder="&#128269; Search and select a school..."
+          oninput="onSchoolInput(this.value)"
+          onfocus="openSchoolDropdown()"
+          onblur="setTimeout(closeSchoolDropdown, 200)">
+        <div class="school-dropdown" id="school-dropdown-mobile"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- BANNERS -->
+  <div class="banner" id="banner-token">
+    <span>&#9888;</span>
+    <span>Conversation memory is nearly full. Start a new conversation to avoid incomplete responses.</span>
+    <button class="banner-dismiss" onclick="document.getElementById('banner-token').classList.remove('visible')">&#10005;</button>
   </div>
-  <div class="header-row2" id="header-row2" style="display:none">
-    <div class="school-search-wrap" id="school-search-wrap-mobile" style="width:100%">
-      <input type="text" id="school-search-input-mobile" class="school-search-input-mobile"
-        placeholder="&#128269; Search and select a school..."
-        autocomplete="off"
-        oninput="filterSchoolListMobile(this.value)"
-        onfocus="showSchoolListMobile()"
-        onblur="setTimeout(hideSchoolListMobile, 200)">
-      <div class="school-dropdown" id="school-dropdown-mobile"></div>
-    </div>
+  <div class="banner" id="banner-data-fail">
+    <span>&#9888;</span>
+    <span>School data unavailable. Answers based on SOP only.</span>
+    <button class="banner-dismiss" onclick="document.getElementById('banner-data-fail').classList.remove('visible')">&#10005;</button>
   </div>
-</header>
 
-<!-- BANNERS -->
-<div class="banner banner-warn" id="banner-token">
-  <span>&#9888;</span>
-  <span>Conversation memory is nearly full. Start a new conversation to avoid incomplete responses.</span>
-  <button class="banner-dismiss" onclick="this.parentElement.classList.remove('visible')">&#10005;</button>
-</div>
-<div class="banner banner-warn" id="banner-data-fail">
-  <span>&#9888;</span>
-  <span>Customer data unavailable. Answers based on SOP only.</span>
-  <button class="banner-dismiss" onclick="this.parentElement.classList.remove('visible')">&#10005;</button>
-</div>
+  <!-- ACTIVE FILTER BAR -->
+  <div class="filter-bar" id="filter-bar">
+    <span>&#127989; Viewing:</span>
+    <span class="filter-tag" id="filter-tag-role"></span>
+    <span class="filter-tag" id="filter-tag-employee" style="display:none"></span>
+    <span class="filter-tag" id="filter-tag-school" style="display:none"></span>
+    <span class="filter-clear" onclick="clearFilters()">&#10005; Clear filters</span>
+  </div>
 
-<!-- ACTIVE FILTER BAR -->
-<div class="active-filter-bar" id="active-filter-bar">
-  <span>&#127989; Viewing:</span>
-  <span class="filter-tag" id="filter-tag-role"></span>
-  <span class="filter-tag" id="filter-tag-employee" style="display:none"></span>
-  <span class="filter-tag" id="filter-tag-school" style="display:none"></span>
-  <span class="filter-clear" onclick="clearFilters()">&#10005; Clear filters</span>
-</div>
+  <!-- APP BODY -->
+  <div class="app-body">
 
-<!-- APP BODY -->
-<div class="app-body">
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar()"></div>
 
-  <!-- SIDEBAR OVERLAY (mobile) -->
-  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+    <aside class="app-sidebar" id="app-sidebar">
+      <nav class="sidebar-tabs">
+        <button class="sidebar-tab active" id="tab-quick" onclick="switchSidebarTab('quick')">Quick Q</button>
+        <button class="sidebar-tab" id="tab-toc" onclick="switchSidebarTab('toc')">SOP</button>
+        <button class="sidebar-tab" id="tab-about" onclick="switchSidebarTab('about')">About</button>
+      </nav>
+      <div class="sidebar-content">
+        <div class="sidebar-pane" id="pane-quick">
+          <div class="sidebar-label">Quick Questions</div>
+          <div id="quick-btns"></div>
+        </div>
+        <div class="sidebar-pane" id="pane-toc" hidden>
+          <div class="sidebar-label">SOP Sections</div>
+          <div id="toc-list"></div>
+        </div>
+        <div class="sidebar-pane" id="pane-about" hidden>
+          <div class="about-content">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-tabs">
-      <button class="sidebar-tab active" id="stab-quick" onclick="switchSidebarTab('quick')">Quick Q</button>
-      <button class="sidebar-tab" id="stab-toc" onclick="switchSidebarTab('toc')">SOP</button>
-      <button class="sidebar-tab" id="stab-about" onclick="switchSidebarTab('about')">About</button>
-    </div>
-    <div class="sidebar-panel" id="spanel-quick">
-      <div class="sidebar-label" style="margin:12px 12px 8px">Quick Questions</div>
-      <div style="padding:0 12px 12px" id="quick-btns"></div>
-    </div>
-    <div class="sidebar-panel" id="spanel-toc" style="display:none">
-      <div style="padding:12px">
-        <div class="sidebar-label" style="margin-bottom:8px">SOP Sections</div>
-        <div id="toc-list"></div>
+            <div class="about-section">
+              <div class="about-heading">About This Tool</div>
+              <p>The Onboarding Assistant is an AI-powered field companion built for the Awesome Customer Onboarding program. It combines two sources of intelligence — the official SOP and live school data — to give every field employee a quick, specific, actionable answer without reading through documents or pulling up spreadsheets mid-conversation.</p>
+            </div>
+
+            <div class="about-section">
+              <div class="about-heading">What It Can Do</div>
+
+              <div class="about-sub">SOP Queries</div>
+              <p>Ask about process, timelines, escalation steps, or roles. The tool answers from the SOP and cites the exact section.</p>
+              <div class="about-examples">
+                <div>What is the Red threshold for hardware?</div>
+                <div>Who owns the Parent Orientation?</div>
+                <div>What evidence is needed for a milestone audit?</div>
+              </div>
+
+              <div class="about-sub">Portfolio View</div>
+              <p>Select your role and name. Ask about your portfolio and the tool shows only your assigned schools with live RAG status.</p>
+              <div class="about-examples">
+                <div>Show me my school portfolio</div>
+                <div>Which of my schools need immediate attention?</div>
+              </div>
+
+              <div class="about-sub">School Deep Dive</div>
+              <p>Select a school from the search bar. Every question is automatically scoped to that school.</p>
+              <div class="about-examples">
+                <div>What is the current RAG status?</div>
+                <div>What are the next steps for this school?</div>
+              </div>
+
+              <div class="about-sub">Aggregate Analysis</div>
+              <p>Ask questions across all schools or your portfolio.</p>
+              <div class="about-examples">
+                <div>How many schools have GAC/APM pending?</div>
+                <div>List schools where Parent Orientation is overdue</div>
+              </div>
+            </div>
+
+            <div class="about-section">
+              <div class="about-heading">How to Use It</div>
+              <div class="about-step"><span class="about-step-num">1</span><span>Select your <strong>role</strong> from the top right dropdown.</span></div>
+              <div class="about-step"><span class="about-step-num">2</span><span>Select your <strong>name</strong> from the employee dropdown (FTM and CSM only). Choose Overall to see all schools.</span></div>
+              <div class="about-step"><span class="about-step-num">3</span><span>Optionally select a <strong>school</strong> from the search box to scope all questions to that school.</span></div>
+              <div class="about-step"><span class="about-step-num">4</span><span>Ask your question naturally. The tool understands context.</span></div>
+              <div class="about-step"><span class="about-step-num">5</span><span>Every answer ends with a <strong>source citation</strong> — SOP section or School Database.</span></div>
+            </div>
+
+            <div class="about-section">
+              <div class="about-heading">Best Practices</div>
+              <ul class="about-list">
+                <li>Always select your employee name before asking portfolio questions.</li>
+                <li>Select a school from the dropdown before asking school-specific questions.</li>
+                <li>Start a New Conversation when switching between schools or topics.</li>
+                <li>If the answer seems incomplete, add more context — mention the milestone name or school stage.</li>
+                <li>The tool only answers from the SOP and your school database — it will not guess.</li>
+              </ul>
+            </div>
+
+            <div class="about-section about-built-by">
+              <div class="about-heading">Built By</div>
+              <p>Ankit Sourabh Lakra — Strategy &amp; Operations leader building with AI.<br>
+              Built as part of a structured AI upskilling journey grounded in 8 years of EdTech operations experience.</p>
+              <div class="about-links">
+                <a href="https://www.linkedin.com/in/ankit-sourabh-lakra" target="_blank" class="about-link">&#128101; LinkedIn</a>
+                <a href="https://solvestories.in" target="_blank" class="about-link">&#127760; SolveStories</a>
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="sidebar-panel" id="spanel-about" style="display:none">
-      <div class="about-content">
+    </aside>
 
-        <div class="about-section">
-          <div class="about-heading">About This Tool</div>
-          <p>The Onboarding Assistant is an AI-powered field companion built for the Awesome Customer Onboarding program. It combines two sources of intelligence — the official SOP and live school data — to give every field employee a quick, specific, actionable answer without reading through documents or pulling up spreadsheets mid-conversation.</p>
+    <button class="sidebar-collapse-btn" id="sidebar-collapse-btn" onclick="toggleDesktopSidebar()" title="Toggle sidebar">&#8249;</button>
+
+    <main class="chat-panel">
+      <div class="chat-messages" id="messages">
+        <div class="skeleton-wrap" id="skeleton-loader">
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line"></div>
         </div>
-
-        <div class="about-section">
-          <div class="about-heading">What It Can Do</div>
-
-          <div class="about-sub">SOP Queries</div>
-          <p>Ask about process, timelines, escalation steps, or roles. The tool answers from the SOP and cites the exact section.</p>
-          <div class="about-examples">
-            <div>What is the Red threshold for hardware?</div>
-            <div>Who owns the Parent Orientation?</div>
-            <div>What evidence is needed for a milestone audit?</div>
-          </div>
-
-          <div class="about-sub">Portfolio View</div>
-          <p>Select your role and name. Ask about your portfolio and the tool shows only your assigned schools with live RAG status.</div>
-          <div class="about-examples">
-            <div>Show me my school portfolio</div>
-            <div>Which of my schools need immediate attention?</div>
-          </div>
-
-          <div class="about-sub">School Deep Dive</div>
-          <p>Select a school from the search bar. Every question is automatically scoped to that school.</p>
-          <div class="about-examples">
-            <div>What is the current RAG status?</div>
-            <div>What are the next steps for this school?</div>
-          </div>
-
-          <div class="about-sub">Aggregate Analysis</div>
-          <p>Ask questions across all schools or your portfolio.</p>
-          <div class="about-examples">
-            <div>How many schools have GAC/APM pending?</div>
-            <div>List schools where Parent Orientation is overdue</div>
-          </div>
-        </div>
-
-        <div class="about-section">
-          <div class="about-heading">How to Use It</div>
-          <div class="about-step"><span class="about-step-num">1</span><span>Select your <strong>role</strong> from the top right dropdown.</span></div>
-          <div class="about-step"><span class="about-step-num">2</span><span>Select your <strong>name</strong> from the employee dropdown (FTM and CSM only). Choose Overall to see all schools.</span></div>
-          <div class="about-step"><span class="about-step-num">3</span><span>Optionally select a <strong>school</strong> from the search box to scope all questions to that school.</span></div>
-          <div class="about-step"><span class="about-step-num">4</span><span>Ask your question naturally. The tool understands context.</span></div>
-          <div class="about-step"><span class="about-step-num">5</span><span>Every answer ends with a <strong>source citation</strong> — SOP section or School Database.</span></div>
-        </div>
-
-        <div class="about-section">
-          <div class="about-heading">Best Practices</div>
-          <ul class="about-list">
-            <li>Always select your employee name before asking portfolio questions.</li>
-            <li>Select a school from the dropdown before asking school-specific questions.</li>
-            <li>Start a New Conversation when switching between schools or topics.</li>
-            <li>If the answer seems incomplete, add more context — mention the milestone name or school stage.</li>
-            <li>The tool only answers from the SOP and your school database — it will not guess.</li>
-          </ul>
-        </div>
-
-        <div class="about-section about-built-by">
-          <div class="about-heading">Built By</div>
-          <p>Ankit Sourabh Lakra — Strategy &amp; Operations leader building with AI.<br>
-          Built as part of a structured AI upskilling journey grounded in 8 years of EdTech operations experience.</p>
-          <div class="about-links">
-            <a href="https://www.linkedin.com/in/ankit-sourabh-lakra" target="_blank" class="about-link">&#128101; LinkedIn</a>
-            <a href="https://solvestories.in" target="_blank" class="about-link">&#127760; SolveStories</a>
-          </div>
-        </div>
-
       </div>
-    </div>
-  </aside>
 
-  <!-- SIDEBAR TOGGLE (desktop) -->
-  <button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleDesktopSidebar()" title="Toggle sidebar">&#8249;</button>
-
-  <!-- MAIN CHAT -->
-  <main class="chat-main">
-    <div class="messages" id="messages">
-      <div id="skeleton-loader" class="skeleton-wrap">
-        <div class="skeleton-line"></div>
-        <div class="skeleton-line"></div>
-        <div class="skeleton-line"></div>
-      </div>
-    </div>
-
-    <div class="input-area">
-      <div class="input-row">
-        <div class="input-wrap">
-          <textarea class="chat-textarea" id="chat-input"
-            placeholder="Ask about any onboarding milestone, SLA, or school status..."
-            onkeydown="handleKey(event)" rows="1"></textarea>
+      <div class="chat-input-bar">
+        <div class="input-row">
+          <div class="input-wrap">
+            <textarea class="chat-textarea" id="chat-input" rows="1"
+              placeholder="Ask about any onboarding milestone, SLA, or school status..."
+              onkeydown="handleKey(event)"></textarea>
+          </div>
+          <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send">&#10148;</button>
         </div>
-        <button class="send-btn" id="send-btn" onclick="sendMessage()" title="Send">&#10148;</button>
+        <div class="input-hint">Enter to send &nbsp;&bull;&nbsp; Shift+Enter for new line &nbsp;&bull;&nbsp; Select your role before asking</div>
       </div>
-      <div class="input-hint">Enter to send &nbsp;&bull;&nbsp; Shift+Enter for new line &nbsp;&bull;&nbsp; Select your role before asking</div>
-    </div>
-  </main>
+    </main>
 
+  </div>
 </div>
 
 <script>
@@ -695,27 +812,30 @@ const QUICK_QUESTIONS = [
   "What evidence do I need for a milestone audit?"
 ];
 const TOC = [["1", "Definitions & Success Criteria"], ["2", "Roles & Responsibilities"], ["3", "School Allocation Process"], ["4", "APM + Goal Alignment Conversation"], ["5", "Hardware Readiness SOP"], ["6", "Digital Teaching Resources SOP"], ["7", "TRAINING1 Preparedness SOP"], ["8", "Training Day 1 Execution SOP"], ["9", "Implementation Monitoring SOP"], ["10", "Parent Orientation SOP"], ["11", "RAG Governance Framework"], ["12", "Daily Field Agent Checklist"], ["13", "Audit Standards"], ["14", "SLA Reference Table"]];
-const SHEET_ID = '1n3rPL6LUONlyv70ZqhFDLibloc01RXSlp58qXTlyIcY';
+const PUBLISHED_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-9-O8-LTr8ipZKhKqR0M_u6AY_7SktM02q1oAAiYPk6KZTaleqNq5kV-rWyqQZNJvUr7L-gwYIhNC/pub?gid=590007201&single=true&output=csv';
 
 const API_ENDPOINT = (window.location.hostname === 'localhost' || window.location.protocol === 'file:')
   ? 'http://localhost:3131/v1/messages'
   : '/api/claude';
 
-const SHEET_ENDPOINT = (window.location.hostname === 'localhost' || window.location.protocol === 'file:')
-  ? 'http://localhost:3131/sheet'
-  : '/api/sheet';
-
 // ── STATE ─────────────────────────────────────────────────────
 let conversationHistory = [];
-let schoolDatabase = {};  // keyed by school_name lowercase
-let currentRole = '';
-let currentRoleLabel = '';
-let currentEmployee = '';    // specific employee name or '' for all
-let currentSchool = '';      // specific school name or '' for all
-let activeSchoolList = [];   // schools visible in dropdown based on employee filter
+let schoolDatabase = {};       // keyed by school_name lowercase
+let currentRole = '';          // full label e.g. "Field Training Manager"
+let currentRoleCode = '';      // FTM / CSM / CSE
+let currentEmployee = '';      // specific employee name, or 'Overall', or ''
+let currentSchool = '';        // specific school name or ''
+let activeSchoolList = [];     // schools available in the picker given current employee filter
 let isLoading = false;
 let tokenCount = 0;
 const TOKEN_WARNING = 160000;
+
+const ROLE_LABELS = {
+  'FTM': 'Field Training Manager',
+  'CSM': 'Customer Success Manager',
+  'CSE': 'Customer Support Executive'
+};
+const ROLE_FIELD_MAP = { 'FTM': 'assigned_ftm', 'CSM': 'assigned_csm' };
 
 // ── INIT ──────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -745,7 +865,7 @@ function renderTOC() {
     item.onclick = () => {
       document.getElementById('chat-input').value = 'Explain Section ' + num + ': ' + name;
       sendMessage();
-      if (window.innerWidth <= 768) toggleMobileSidebar();
+      closeMobileSidebarIfOpen();
     };
     c.appendChild(item);
   });
@@ -755,24 +875,16 @@ function renderTOC() {
 async function loadSchoolData() {
   const statusEl = document.getElementById('data-status');
   try {
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-9-O8-LTr8ipZKhKqR0M_u6AY_7SktM02q1oAAiYPk6KZTaleqNq5kV-rWyqQZNJvUr7L-gwYIhNC/pub?gid=590007201&single=true&output=csv';
-    console.log('Fetching published sheet directly:', csvUrl);
-    const resp = await fetch(csvUrl);
-    console.log('Sheet response status:', resp.status, resp.statusText);
-    if (!resp.ok) {
-      const errText = await resp.text();
-      console.error('Sheet fetch error:', errText);
-      throw new Error('fetch failed: ' + resp.status);
-    }
+    const resp = await fetch(PUBLISHED_CSV_URL);
+    if (!resp.ok) throw new Error('fetch failed: ' + resp.status);
     const text = await resp.text();
-    console.log('Sheet data received, length:', text.length);
     parseSchoolCSV(text);
     const count = Object.keys(schoolDatabase).length;
-    statusEl.className = 'data-status loaded';
-    statusEl.textContent = '&#10003; ' + count + ' schools loaded';
+    statusEl.classList.remove('error');
     statusEl.innerHTML = '&#10003;&nbsp;' + count + ' schools loaded';
-  } catch(e) {
-    statusEl.className = 'data-status error';
+  } catch (e) {
+    console.error('Sheet load error:', e);
+    statusEl.classList.add('error');
     statusEl.innerHTML = '&#9888;&nbsp;Data unavailable';
     document.getElementById('banner-data-fail').classList.add('visible');
   } finally {
@@ -782,212 +894,66 @@ async function loadSchoolData() {
 
 function parseSchoolCSV(text) {
   const lines = text.trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim());
+  const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
   lines.slice(1).forEach(line => {
-    const vals = line.match(/(".*?"|[^,]+)(?=,|$)/g) || line.split(',');
+    const vals = line.match(/(\"[^\"]*\"|[^,]+)(?=,|$)/g) || line.split(',');
     const obj = {};
-    headers.forEach((h, i) => { obj[h] = (vals[i]||'').replace(/"/g,'').trim(); });
-    if (obj.school_name) {
-      schoolDatabase[obj.school_name.toLowerCase()] = obj;
-    }
+    headers.forEach((h, i) => { obj[h] = (vals[i] || '').replace(/"/g, '').trim(); });
+    if (obj.school_name) schoolDatabase[obj.school_name.toLowerCase()] = obj;
   });
-  activeSchoolList = Object.values(schoolDatabase)
-    .sort((a,b) => a.school_name.localeCompare(b.school_name));
+  activeSchoolList = Object.values(schoolDatabase).sort((a, b) => a.school_name.localeCompare(b.school_name));
 }
-
-function findSchoolInQuestion(question) {
-  const q = question.toLowerCase();
-  for (const [key, val] of Object.entries(schoolDatabase)) {
-    if (q.includes(key)) return val;
-  }
-  return null;
-}
-
-function schoolDataToContext(school) {
-  return Object.entries(school)
-    .filter(([k]) => !['quality_profile'].includes(k))
-    .map(([k,v]) => k + ': ' + v)
-    .join('\n');
-}
-
-function isAggregateQuestion(question) {
-  const q = question.toLowerCase();
-  const aggWords = ['how many','count','total','all schools','list','which schools',
-    'schools have','schools are','schools with','schools that','schools not',
-    'percentage','percent','ratio','summary','overview','status of'];
-  return aggWords.some(w => q.includes(w));
-}
-
-function countBy(schools, field, value) {
-  return schools.filter(s => (s[field]||'').trim() === value).length;
-}
-
-function countByField(schools, field) {
-  const counts = {};
-  schools.forEach(s => {
-    const v = (s[field] || 'Unknown').trim();
-    counts[v] = (counts[v] || 0) + 1;
-  });
-  return counts;
-}
-
-function buildDatabaseSummary() {
-  const schools = Object.values(schoolDatabase);
-  if (schools.length === 0) return null;
-
-  const TODAY = new Date();
-
-  const overall = countByField(schools, 'overall_rag');
-  const gac     = countByField(schools, 'gac_apm_rag');
-  const t1      = countByField(schools, 'training1_rag');
-  const hw      = countByField(schools, 'hardware_rag');
-  const po      = countByField(schools, 'parent_orientation_rag');
-  const impl    = countByField(schools, 'implementation_rag');
-  const dtr     = countByField(schools, 'digital_teaching_resources_rag');
-  const order   = countByField(schools, 'order_placement_rag');
-
-  const fmt = (c) => `Green=${c.Green||0} Amber=${c.Amber||0} Red=${c.Red||0} Grey=${c.Grey||0}`;
-
-  // Schools needing immediate action
-  const redSchools = schools.filter(s=>s.overall_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
-  const t1Red      = schools.filter(s=>s.training1_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
-  const gacRed     = schools.filter(s=>s.gac_apm_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
-  const hwRed      = schools.filter(s=>s.hardware_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
-  const poRed      = schools.filter(s=>s.parent_orientation_rag.trim()==='Red').map(s=>s.school_name).slice(0,8);
-
-  // Date-based computations using school_start_date
-  // Schools where TRAINING1 deadline (= school start date) is within next 60 days
-  // and training1_rag is Grey or Red (not yet done)
-  const upcomingT1 = schools.filter(s => {
-    if (!s.school_start_date) return false;
-    const startDate = new Date(s.school_start_date);
-    const daysToStart = Math.ceil((startDate - TODAY) / (1000*60*60*24));
-    const t1Status = s.training1_rag.trim();
-    return daysToStart >= 0 && daysToStart <= 60 && (t1Status === 'Grey' || t1Status === 'Red');
-  }).map(s => {
-    const startDate = new Date(s.school_start_date);
-    const daysToStart = Math.ceil((startDate - TODAY) / (1000*60*60*24));
-    return s.school_name + ' (start: ' + s.school_start_date + ', ' + daysToStart + ' days away)';
-  }).slice(0, 15);
-
-  // Schools where GAC deadline (14 days before start) is within next 60 days and not done
-  const upcomingGAC = schools.filter(s => {
-    if (!s.school_start_date) return false;
-    const startDate = new Date(s.school_start_date);
-    const gacDeadline = new Date(startDate - 7*24*60*60*1000); // 7 days before start = Red
-    const daysToDeadline = Math.ceil((gacDeadline - TODAY) / (1000*60*60*24));
-    const gacStatus = s.gac_apm_rag.trim();
-    return daysToDeadline >= 0 && daysToDeadline <= 60 && (gacStatus === 'Grey' || gacStatus === 'Red');
-  }).map(s => {
-    const startDate = new Date(s.school_start_date);
-    const gacDeadline = new Date(startDate - 7*24*60*60*1000);
-    const daysToDeadline = Math.ceil((gacDeadline - TODAY) / (1000*60*60*24));
-    return s.school_name + ' (GAC deadline: ' + gacDeadline.toISOString().split('T')[0] + ', ' + daysToDeadline + ' days)';
-  }).slice(0, 15);
-
-  // Schools overdue for Parent Orientation (start date + 14 days passed, not done)
-  const overdueParentOrient = schools.filter(s => {
-    if (!s.school_start_date) return false;
-    const redDeadline = new Date(s.school_start_date);
-    redDeadline.setDate(redDeadline.getDate() + 14);
-    return TODAY > redDeadline && s.parent_orientation_rag.trim() === 'Red';
-  }).map(s => s.school_name).slice(0, 10);
-
-  return `LIVE SCHOOL DATABASE — ${schools.length} schools total. Today: ${TODAY.toISOString().split('T')[0]}
-
-MILESTONE STATUS COUNTS:
-Overall RAG:        ${fmt(overall)}
-Order Placement:    ${fmt(order)}
-GAC/APM:            ${fmt(gac)}
-Digital Resources:  ${fmt(dtr)}
-TRAINING1:          ${fmt(t1)}
-Hardware:           ${fmt(hw)}
-Parent Orientation: ${fmt(po)}
-Implementation:     ${fmt(impl)}
-
-SCHOOLS NEEDING IMMEDIATE ACTION:
-Overall Red (${redSchools.length} shown): ${redSchools.join(' | ')||'None'}
-TRAINING1 Red: ${t1Red.join(' | ')||'None'}
-GAC/APM Red: ${gacRed.join(' | ')||'None'}
-Hardware Red: ${hwRed.join(' | ')||'None'}
-Parent Orientation Red: ${poRed.join(' | ')||'None'}
-
-DATE-BASED UPCOMING DEADLINES:
-Schools needing TRAINING1 in next 60 days (${upcomingT1.length} schools):
-${upcomingT1.join('\n')||'None'}
-
-Schools needing GAC/APM in next 60 days (${upcomingGAC.length} schools):
-${upcomingGAC.join('\n')||'None'}
-
-Schools overdue for Parent Orientation (${overdueParentOrient.length} schools):
-${overdueParentOrient.join(' | ')||'None'}`;
-}
-
 
 // ── WELCOME STATE ─────────────────────────────────────────────
 function showWelcome() {
   const msgs = document.getElementById('messages');
-  msgs.innerHTML = `
-    <div class="welcome-state" id="welcome">
-      <div class="welcome-icon">&#128218;</div>
-      <div class="welcome-title">Onboarding Assistant</div>
-      <div class="welcome-sub">Select your role above. Employee and school filters will appear automatically. Ask any question about the onboarding process or a specific school.</div>
-    </div>`;
+  msgs.innerHTML = '<div class="welcome-state" id="welcome">' +
+    '<div class="welcome-icon">&#128218;</div>' +
+    '<div class="welcome-title">Onboarding Assistant</div>' +
+    '<div class="welcome-sub">Select your role above. Employee and school filters will appear automatically. Ask any question about the onboarding process or a specific school.</div>' +
+    '</div>';
 }
 
-// ── ROLE & EMPLOYEE & SCHOOL SELECTORS ───────────────────────
-const ROLE_LABELS = {
-  'FTM': 'Field Training Manager',
-  'CSM': 'Customer Success Manager',
-  'CSE': 'Customer Support Executive'
-};
-
-const ROLE_FIELD_MAP = {
-  'FTM': 'assigned_ftm',
-  'CSM': 'assigned_csm'
-};
+// ── ROLE / EMPLOYEE / SCHOOL SELECTORS ────────────────────────
+function setSchoolPickerActive(active) {
+  document.getElementById('app-header').classList.toggle('has-school-picker', !!active);
+  if (!active) {
+    currentSchool = '';
+    document.getElementById('school-input-desktop').value = '';
+    document.getElementById('school-input-mobile').value = '';
+  }
+}
 
 function onRoleChange(roleCode) {
-  currentRole = ROLE_LABELS[roleCode] || roleCode;
-  currentRoleLabel = roleCode;
+  currentRoleCode = roleCode;
+  currentRole = ROLE_LABELS[roleCode] || '';
   currentEmployee = '';
   currentSchool = '';
 
   const empSelect = document.getElementById('employee-select');
-  const schoolWrap = document.getElementById('school-search-wrap');
-  const schoolInput = document.getElementById('school-search-input');
-
-  // Reset employee dropdown
   empSelect.innerHTML = '<option value="">Select employee</option>';
-  schoolInput.value = '';
 
   if (roleCode === 'FTM' || roleCode === 'CSM') {
-    // Populate employee dropdown from database
     const field = ROLE_FIELD_MAP[roleCode];
-    const employees = [...new Set(
-      Object.values(schoolDatabase).map(s => s[field]).filter(Boolean)
-    )].sort();
+    const employees = [...new Set(Object.values(schoolDatabase).map(s => s[field]).filter(Boolean))].sort();
 
     empSelect.innerHTML = '<option value="Overall">Overall</option>';
     employees.forEach(name => {
       const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
+      opt.value = name; opt.textContent = name;
       empSelect.appendChild(opt);
     });
-    empSelect.value = 'Overall';  // default to Overall
+    empSelect.value = 'Overall';
     empSelect.style.display = '';
-    // Trigger employee change with Overall default
     onEmployeeChange('Overall');
-  } else {
-    // CSE — no employee dropdown, show all schools
+  } else if (roleCode === 'CSE') {
     empSelect.style.display = 'none';
     currentEmployee = 'Overall';
     updateActiveSchoolList();
-    const dsk = document.getElementById('school-search-wrap-desktop');
-    const mob = document.getElementById('header-row2');
-    if (dsk) dsk.style.display = '';
-    if (mob) mob.style.display = '';
+    setSchoolPickerActive(true);
+  } else {
+    empSelect.style.display = 'none';
+    setSchoolPickerActive(false);
   }
 
   updateFilterBar();
@@ -996,115 +962,82 @@ function onRoleChange(roleCode) {
 function onEmployeeChange(employee) {
   currentEmployee = employee;
   currentSchool = '';
-  document.getElementById('school-search-input').value = '';
 
   if (employee) {
     updateActiveSchoolList();
-    const dsk = document.getElementById('school-search-wrap-desktop');
-    const mob = document.getElementById('header-row2');
-    if (dsk) dsk.style.display = '';
-    if (mob) mob.style.display = '';
+    setSchoolPickerActive(true);
   } else {
-    const dsk = document.getElementById('school-search-wrap-desktop');
-    const mob = document.getElementById('header-row2');
-    if (dsk) dsk.style.display = 'none';
-    if (mob) mob.style.display = 'none';
+    setSchoolPickerActive(false);
   }
   updateFilterBar();
 }
 
 function updateActiveSchoolList() {
   const schools = Object.values(schoolDatabase);
-  const field = ROLE_FIELD_MAP[currentRoleLabel];
+  const field = ROLE_FIELD_MAP[currentRoleCode];
 
   if (!currentEmployee || currentEmployee === 'Overall' || !field) {
-    activeSchoolList = schools.sort((a,b) => a.school_name.localeCompare(b.school_name));
+    activeSchoolList = schools.sort((a, b) => a.school_name.localeCompare(b.school_name));
   } else {
-    activeSchoolList = schools
-      .filter(s => s[field] === currentEmployee)
-      .sort((a,b) => a.school_name.localeCompare(b.school_name));
+    activeSchoolList = schools.filter(s => s[field] === currentEmployee)
+      .sort((a, b) => a.school_name.localeCompare(b.school_name));
   }
-  renderSchoolDropdown(activeSchoolList, '');
+  renderSchoolDropdown(activeSchoolList);
 }
 
-function filterSchoolList(query) {
+function onSchoolInput(query) {
+  // keep both inputs in sync as the user types in either one
+  document.getElementById('school-input-desktop').value = query;
+  document.getElementById('school-input-mobile').value = query;
+
   const q = query.toLowerCase();
   const filtered = activeSchoolList.filter(s =>
-    s.school_name.toLowerCase().includes(q) ||
-    (s.city && s.city.toLowerCase().includes(q))
+    s.school_name.toLowerCase().includes(q) || (s.city && s.city.toLowerCase().includes(q))
   );
-  renderSchoolDropdown(filtered, query);
-  showSchoolList();
+  renderSchoolDropdown(filtered);
+  openSchoolDropdown();
 }
 
-function syncMobileSchoolInput(val) {
-  const mob = document.getElementById('school-search-input-mobile');
-  if (mob) mob.value = val;
-}
-function filterSchoolListMobile(query) {
-  filterSchoolList(query);
-  // also sync desktop input
-  const dsk = document.getElementById('school-search-input');
-  if (dsk) dsk.value = query;
-}
-function showSchoolListMobile() {
-  document.getElementById('school-dropdown-mobile').classList.add('open');
-}
-function hideSchoolListMobile() {
-  document.getElementById('school-dropdown-mobile').classList.remove('open');
-}
-
-function renderSchoolDropdown(schools, query) {
-  const dd = document.getElementById('school-dropdown');
-  let html = '<div class="school-option all-option" onclick="selectSchool(\'\', \'All schools\')">&#9679; All schools (' + activeSchoolList.length + ')</div>';
+function renderSchoolDropdown(schools) {
+  let html = '<div class="school-option all-option" onclick="selectSchool(\'\')">&#9679; All schools (' + activeSchoolList.length + ')</div>';
   schools.slice(0, 60).forEach(s => {
     const ragClass = 'rag-' + (s.overall_rag || 'Grey').trim();
-    html += '<div class="school-option" onclick="selectSchool(\'' + 
-      s.school_name.replace(/'/g, "\\'") + '\', \'' + 
-      s.school_name.replace(/'/g, "\\'") + '\')">' +
+    const safeName = s.school_name.replace(/'/g, "\\'");
+    html += '<div class="school-option" onclick="selectSchool(\'' + safeName + '\')">' +
       '<span class="school-rag ' + ragClass + '"></span>' +
       s.school_name +
-      '<span style="margin-left:auto;font-size:10px;color:#aaa">' + (s.city||'') + '</span>' +
+      '<span style="margin-left:auto;font-size:10px;color:#aaa">' + (s.city || '') + '</span>' +
       '</div>';
   });
   if (schools.length > 60) {
-    html += '<div class="school-option" style="color:#aaa;font-style:italic">...and ' + (schools.length-60) + ' more. Type to search.</div>';
+    html += '<div class="school-option" style="color:#aaa;font-style:italic">...and ' + (schools.length - 60) + ' more. Type to search.</div>';
   }
-  dd.innerHTML = html;
-  // Mirror to mobile dropdown
-  const ddm = document.getElementById('school-dropdown-mobile');
-  if (ddm) ddm.innerHTML = html.replace(/onclick="selectSchool/g, 'onclick="selectSchoolMobile');
+  document.getElementById('school-dropdown-desktop').innerHTML = html;
+  document.getElementById('school-dropdown-mobile').innerHTML = html;
 }
 
-function selectSchoolMobile(schoolName, label) {
-  selectSchool(schoolName, label);
-  const mob = document.getElementById('school-search-input-mobile');
-  if (mob) mob.value = schoolName || '';
-  hideSchoolListMobile();
-}
-
-function selectSchool(schoolName, label) {
+function selectSchool(schoolName) {
   currentSchool = schoolName;
-  const dskInput = document.getElementById('school-search-input');
-  const mobInput = document.getElementById('school-search-input-mobile');
-  if (dskInput) dskInput.value = schoolName || '';
-  if (mobInput) mobInput.value = schoolName || '';
-  hideSchoolList();
+  document.getElementById('school-input-desktop').value = schoolName || '';
+  document.getElementById('school-input-mobile').value = schoolName || '';
+  closeSchoolDropdown();
   updateFilterBar();
 }
 
-function showSchoolList() {
-  document.getElementById('school-dropdown').classList.add('open');
+function openSchoolDropdown() {
+  document.getElementById('school-dropdown-desktop').classList.add('open');
+  document.getElementById('school-dropdown-mobile').classList.add('open');
 }
-function hideSchoolList() {
-  document.getElementById('school-dropdown').classList.remove('open');
+function closeSchoolDropdown() {
+  document.getElementById('school-dropdown-desktop').classList.remove('open');
+  document.getElementById('school-dropdown-mobile').classList.remove('open');
 }
 
 function updateFilterBar() {
-  const bar = document.getElementById('active-filter-bar');
+  const bar = document.getElementById('filter-bar');
   const tagRole = document.getElementById('filter-tag-role');
-  const tagEmp  = document.getElementById('filter-tag-employee');
-  const tagSch  = document.getElementById('filter-tag-school');
+  const tagEmp = document.getElementById('filter-tag-employee');
+  const tagSch = document.getElementById('filter-tag-school');
 
   if (!currentRole) { bar.classList.remove('visible'); return; }
 
@@ -1112,73 +1045,26 @@ function updateFilterBar() {
   tagRole.textContent = currentRole;
 
   if (currentEmployee && currentEmployee !== 'Overall') {
-    tagEmp.textContent = currentEmployee;
-    tagEmp.style.display = '';
+    tagEmp.textContent = currentEmployee; tagEmp.style.display = '';
   } else if (currentEmployee === 'Overall') {
-    tagEmp.textContent = 'All employees';
-    tagEmp.style.display = '';
+    tagEmp.textContent = 'All employees'; tagEmp.style.display = '';
   } else {
     tagEmp.style.display = 'none';
   }
 
-  if (currentSchool) {
-    tagSch.textContent = currentSchool;
-    tagSch.style.display = '';
-  } else {
-    tagSch.style.display = 'none';
-  }
+  if (currentSchool) { tagSch.textContent = currentSchool; tagSch.style.display = ''; }
+  else { tagSch.style.display = 'none'; }
 }
 
 function clearFilters() {
   document.getElementById('role-select').value = '';
   document.getElementById('employee-select').style.display = 'none';
-  const dsk2 = document.getElementById('school-search-wrap-desktop');
-  const mob2 = document.getElementById('header-row2');
-  if (dsk2) dsk2.style.display = 'none';
-  if (mob2) mob2.style.display = 'none';
-  const si = document.getElementById('school-search-input');
-  const sim = document.getElementById('school-search-input-mobile');
-  if (si) si.value = '';
-  if (sim) sim.value = '';
-  currentRole = ''; currentRoleLabel = ''; currentEmployee = ''; currentSchool = '';
-  document.getElementById('active-filter-bar').classList.remove('visible');
+  setSchoolPickerActive(false);
+  currentRole = ''; currentRoleCode = ''; currentEmployee = ''; currentSchool = '';
+  document.getElementById('filter-bar').classList.remove('visible');
 }
 
-// ── SYSTEM PROMPT ─────────────────────────────────────────────
-function buildSystemPrompt(schoolCtx) {
-  const roleRules = {
-    'Field Training Manager':      'Focus on TRAINING1, GAC/APM, implementation. Action-first, field-ready language.',
-    'Customer Success Manager':    'Focus on hardware, parent orientation, relationship management. Include customer communication steps.',
-    'Sales Manager':               'Include business impact and retention risk implications.',
-    'Customer Support Executive':  'Include what to communicate to the customer and expected resolution time.',
-  };
-  const empNote = currentEmployee && currentEmployee !== 'Overall'
-    ? ' Viewing data for employee: ' + currentEmployee + '.' : '';
-  const schNote = currentSchool ? ' Focused on school: ' + currentSchool + '.' : '';
-  const roleInstruction = currentRole && roleRules[currentRole]
-    ? '\nEmployee role: ' + currentRole + '. ' + roleRules[currentRole] + empNote + schNote
-    : '';
-
-  const schoolSection = schoolCtx
-    ? `\n\nSCHOOL DATA:\n${schoolCtx}`
-    : '';
-
-  return `You are an Onboarding Assistant for an EdTech company helping field employees with the Awesome Customer Onboarding SOP.
-
-RULES:
-1. Answer ONLY from the SOP or school data below. Never use outside knowledge. When school data is provided, USE IT to answer directly — do not say it is not in the SOP.
-2. Keep total answer under 60 words. Direct and specific. No filler phrases like 'Based on the data' or 'According to the SOP'.
-3. Structure: Issue (1 sentence) then Next steps (max 3, numbered). Skip Info Needed unless genuinely required. No preamble, no restating the question.
-4. End every response with: Source: Section [number] — [name]
-5. On the line after source write: SOPREF: [one sentence from the SOP that supports your answer]
-6. If a question needs school data and data is provided above, answer from the data. Only say "not covered" if NEITHER the SOP nor the school data contains the answer.
-7. Never say I think, possibly, maybe, or it seems.${roleInstruction}
-
-SOP:
-${SOP}${schoolSection}`;
-}
-
-// ── SEND MESSAGE — TWO PASS ARCHITECTURE ────────────────────
+// ── SEND MESSAGE — TWO PASS ARCHITECTURE ──────────────────────
 async function sendMessage() {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
@@ -1188,7 +1074,7 @@ async function sendMessage() {
     alert('Please select your role from the dropdown before asking a question.');
     return;
   }
-  if ((currentRoleLabel === 'FTM' || currentRoleLabel === 'CSM') && !currentEmployee) {
+  if ((currentRoleCode === 'FTM' || currentRoleCode === 'CSM') && !currentEmployee) {
     alert('Please select an employee or Overall before asking a question.');
     return;
   }
@@ -1196,15 +1082,16 @@ async function sendMessage() {
   const welcome = document.getElementById('welcome');
   if (welcome) welcome.remove();
 
-  // Enrich question with active filters so Claude knows the context
   let enrichedText = text;
   if (currentSchool) {
-    enrichedText = text + ' [Context: School selected = ' + currentSchool + ']';
+    enrichedText = text + ' [Viewing school: ' + currentSchool + ']';
   } else if (currentEmployee && currentEmployee !== 'Overall') {
-    enrichedText = text + ' [Context: Employee selected = ' + currentEmployee + ']';
+    enrichedText = text + ' [Viewing employee portfolio: ' + currentEmployee + ' (' + currentRole + ')]';
+  } else if (currentEmployee === 'Overall') {
+    enrichedText = text + ' [Viewing: All schools in database]';
   }
 
-  addUserMessage(text);  // show original text to user
+  addUserMessage(text);
   input.value = '';
   input.style.height = 'auto';
   conversationHistory.push({ role: 'user', content: text });
@@ -1214,47 +1101,31 @@ async function sendMessage() {
   document.getElementById('send-btn').disabled = true;
 
   try {
-    // ── PASS 1: QUERY PLANNER ──────────────────────────────
     const querySpec = await planQuery(enrichedText);
-    console.log('Query spec:', JSON.stringify(querySpec));
 
-    // ── EXECUTE QUERY IN JAVASCRIPT ───────────────────────
     let dataContext = null;
-    // Force data fetch if employee or school is selected — even if Claude
-    // thinks it's an SOP question, the user may want contextual data
     const hasActiveFilter = currentSchool || (currentEmployee && currentEmployee !== 'Overall');
     if (querySpec.query_type !== 'sop_only' || hasActiveFilter) {
       dataContext = executeQuery(querySpec);
-      console.log('Query returned', dataContext.count, 'results');
     }
 
-    // ── PASS 2: ANSWER GENERATOR ──────────────────────────
-    // Claude gets the fetched data and generates the final answer
-    const reply = await generateAnswer(enrichedText, dataContext, querySpec);
-
+    const reply = await generateAnswer(enrichedText, dataContext);
     conversationHistory.push({ role: 'assistant', content: reply });
 
-    // Token tracking
-    const totalChars = conversationHistory.reduce((a,m) => a + m.content.length, 0);
+    const totalChars = conversationHistory.reduce((a, m) => a + m.content.length, 0);
     tokenCount = Math.round(totalChars / 4);
-    if (tokenCount > TOKEN_WARNING) {
-      document.getElementById('banner-token').classList.add('visible');
-    }
+    if (tokenCount > TOKEN_WARNING) document.getElementById('banner-token').classList.add('visible');
 
     removeTyping(typingId);
     addAssistantMessage(reply);
 
-  } catch(e) {
+  } catch (e) {
     removeTyping(typingId);
     console.error('Error:', e);
     let msg;
-    if (e.message === 'timeout') {
-      msg = 'Request timed out. Please try again.';
-    } else if (e.message.includes('fetch') || e.message.includes('Failed')) {
-      msg = 'Cannot reach the API. Check your connection and try again.';
-    } else {
-      msg = 'Error: ' + e.message;
-    }
+    if (e.message === 'timeout') msg = 'Request timed out. Please try again.';
+    else if (e.message.includes('fetch') || e.message.includes('Failed')) msg = 'Cannot reach the API. Check your connection and try again.';
+    else msg = 'Error: ' + e.message;
     addErrorMessage(msg);
   }
 
@@ -1264,128 +1135,73 @@ async function sendMessage() {
 
 // ── PASS 1: QUERY PLANNER ─────────────────────────────────────
 async function planQuery(question) {
-  const schoolFields = `
-Available database fields:
-- overall_rag: Green/Amber/Red/Grey
-- gac_apm_rag: Green/Amber/Red/Grey
-- training1_rag: Green/Amber/Red/Grey
-- hardware_rag: Green/Amber/Red/Grey (hardware_pct is the % number)
-- parent_orientation_rag: Green/Amber/Red/Grey
-- implementation_rag: Green/Amber/Red/Grey
-- digital_teaching_resources_rag: Green/Amber/Red/Grey
-- order_placement_rag: Green/Amber/Red/Grey
-- order_delivery_rag: Green/Amber/Red/Grey
-- assigned_ftm: field training manager name
-- assigned_csm: customer success manager name
-- city, state: location
-- onboarding_stage: Pre-Start / Just Started (0-14 days) / Early (15-30 days) / Mid (31-60 days) / Late (61-90 days) / Complete (90+ days)
-- school_start_date: YYYY-MM-DD format
-- days_since_start: number
-- school_name: full school name
-- school_size: number of students
-- nps_score: 0-10
-- open_tickets: count
-- pending_dues_pct: percentage
-- teachers_trained_pct: percentage
-- implementation_pct_subjects: percentage
-- notes: field notes`;
+  const schoolFields = '\nAvailable database fields:\n' +
+    '- overall_rag, gac_apm_rag, training1_rag, hardware_rag, parent_orientation_rag, implementation_rag, digital_teaching_resources_rag, order_placement_rag, order_delivery_rag: Green/Amber/Red/Grey\n' +
+    '- hardware_pct, teachers_trained_pct, implementation_pct_subjects, pending_dues_pct: percentage numbers\n' +
+    '- assigned_ftm, assigned_csm: employee names\n' +
+    '- city, state: location\n' +
+    '- onboarding_stage: Pre-Start / Just Started (0-14 days) / Early (15-30 days) / Mid (31-60 days) / Late (61-90 days) / Complete (90+ days)\n' +
+    '- school_start_date: YYYY-MM-DD\n' +
+    '- days_since_start, school_size, nps_score, open_tickets: numbers\n' +
+    '- school_name: full school name\n' +
+    '- notes: free text field notes';
 
-  const systemPrompt = `You are a database query planner. Analyse the user's question and return a JSON query spec.
-
-${schoolFields}
-
-Return ONLY valid JSON, no markdown, no explanation:
-{
-  "query_type": "filter" | "school_specific" | "aggregate" | "sop_only",
-  "filters": [
-    {"field": "field_name", "op": "eq|neq|gt|lt|contains|in_days_from_today", "value": "value"}
-  ],
-  "fields_to_return": ["list of field names needed to answer"],
-  "sort_by": {"field": "field_name", "direction": "asc|desc"},
-  "limit": 20,
-  "school_name": "exact school name if school-specific question"
-}
-
-Rules:
-- query_type = sop_only: question is ONLY about process/procedure with no data needed. If employee or school context is mentioned, never use sop_only.
-- query_type = school_specific: question about one named school or [Context: School selected = ...]
-- query_type = filter: list/filter across multiple schools
-- query_type = aggregate: count/summary — use this for "how many", "show me my portfolio", "my schools", "under me", "my list"
-- If [Context: Employee selected = X] is in the question, query_type must be aggregate or filter, never sop_only
-- For date filters use op = "in_days_from_today" with value = number of days
-- For RAG filters use op = "eq" with value = "Red"/"Green"/"Amber"/"Grey"
-- fields_to_return should include only fields needed to answer the question
-- Default limit = 20, max = 50`;
+  const systemPrompt = 'You are a database query planner. Analyse the question and return a JSON query spec.\n' +
+    schoolFields +
+    '\n\nReturn ONLY valid JSON, no markdown, no explanation:\n' +
+    '{"query_type":"filter|school_specific|aggregate|sop_only","filters":[{"field":"name","op":"eq|neq|gt|lt|contains|in_days_from_today","value":"value"}],"fields_to_return":["field1","field2"],"sort_by":{"field":"name","direction":"asc|desc"},"limit":20,"school_name":"exact name if school-specific"}\n\n' +
+    'Rules:\n' +
+    '- query_type=sop_only only when no school data is needed at all. If employee or school context is in the question, never use sop_only.\n' +
+    '- query_type=school_specific: question about one named school or [Viewing school: ...]\n' +
+    '- query_type=filter: list/filter across multiple schools\n' +
+    '- query_type=aggregate: counts, "how many", "my portfolio", "my schools", "under me"\n' +
+    '- date filters use op=in_days_from_today with value=number of days\n' +
+    '- RAG filters use op=eq with value=Red/Green/Amber/Grey\n' +
+    '- default limit=20, max=50';
 
   const resp = await callClaude(systemPrompt, question, [], 300);
-  let raw = resp.replace(/```json|```/g, '').trim();
-
+  const raw = resp.replace(/```json|```/g, '').trim();
   try {
     return JSON.parse(raw);
-  } catch(e) {
+  } catch (e) {
     console.warn('Query plan parse failed, defaulting to sop_only:', raw);
     return { query_type: 'sop_only', filters: [], fields_to_return: [] };
   }
 }
 
-// ── QUERY EXECUTOR (pure JavaScript, no API call) ─────────────
+// ── QUERY EXECUTOR (pure JS, no API call) ─────────────────────
 function executeQuery(spec) {
   const TODAY = new Date();
-  console.log('executeQuery called. currentEmployee:', currentEmployee, 
-              'currentSchool:', currentSchool,
-              'activeSchoolList length:', activeSchoolList.length,
-              'query_type:', spec.query_type);
-
-  // Always start with full database and apply employee filter directly
   let schools = Object.values(schoolDatabase);
 
-  // Apply employee filter if specific employee selected
-  if (currentEmployee && currentEmployee !== 'Overall' && currentRoleLabel) {
-    const empField = currentRoleLabel === 'FTM' ? 'assigned_ftm' : 
-                     currentRoleLabel === 'CSM' ? 'assigned_csm' : null;
-    if (empField) {
-      schools = schools.filter(s => s[empField] === currentEmployee);
-    }
+  if (currentEmployee && currentEmployee !== 'Overall' && currentRoleCode) {
+    const empField = ROLE_FIELD_MAP[currentRoleCode];
+    if (empField) schools = schools.filter(s => s[empField] === currentEmployee);
   }
+  if (currentSchool) schools = schools.filter(s => s.school_name === currentSchool);
 
-  console.log('After employee filter (', currentEmployee, '):', schools.length, 'schools');
-
-  // Pre-filter by selected school if active
-  if (currentSchool) {
-    schools = schools.filter(s => s.school_name === currentSchool);
-    console.log('After school filter:', schools.length);
-  }
-
-  // School-specific lookup
   if (spec.query_type === 'school_specific' && spec.school_name) {
     const key = spec.school_name.toLowerCase();
-    // Try exact match first, then partial
     let school = schoolDatabase[key];
-    if (!school) {
-      school = schools.find(s => s.school_name.toLowerCase().includes(key) ||
-                                  key.includes(s.school_name.toLowerCase()));
-    }
-    if (school) {
-      return { count: 1, schools: [school], type: 'school_specific' };
-    }
-    return { count: 0, schools: [], type: 'school_specific', error: 'School not found' };
+    if (!school) school = schools.find(s => s.school_name.toLowerCase().includes(key) || key.includes(s.school_name.toLowerCase()));
+    if (school) return { count: 1, shown: 1, schools: [school] };
+    return { count: 0, shown: 0, schools: [] };
   }
 
-  // Apply filters
-  if (spec.filters && spec.filters.length > 0) {
+  if (spec.filters && spec.filters.length) {
     spec.filters.forEach(f => {
       schools = schools.filter(s => {
         const val = (s[f.field] || '').toString().trim();
-        switch(f.op) {
-          case 'eq':       return val.toLowerCase() === f.value.toString().toLowerCase();
-          case 'neq':      return val.toLowerCase() !== f.value.toString().toLowerCase();
-          case 'gt':       return parseFloat(val) > parseFloat(f.value);
-          case 'lt':       return parseFloat(val) < parseFloat(f.value);
-          case 'contains': return val.toLowerCase().includes(f.value.toString().toLowerCase());
+        switch (f.op) {
+          case 'eq': return val.toLowerCase() === String(f.value).toLowerCase();
+          case 'neq': return val.toLowerCase() !== String(f.value).toLowerCase();
+          case 'gt': return parseFloat(val) > parseFloat(f.value);
+          case 'lt': return parseFloat(val) < parseFloat(f.value);
+          case 'contains': return val.toLowerCase().includes(String(f.value).toLowerCase());
           case 'in_days_from_today': {
             if (!s.school_start_date) return false;
             const d = new Date(s.school_start_date);
-            const days = Math.ceil((d - TODAY) / (1000*60*60*24));
+            const days = Math.ceil((d - TODAY) / 86400000);
             return days >= 0 && days <= parseInt(f.value);
           }
           default: return true;
@@ -1394,157 +1210,119 @@ function executeQuery(spec) {
     });
   }
 
-  // Sort
   if (spec.sort_by && spec.sort_by.field) {
     schools.sort((a, b) => {
-      const av = a[spec.sort_by.field] || '';
-      const bv = b[spec.sort_by.field] || '';
-      const cmp = av.toString().localeCompare(bv.toString(), undefined, {numeric: true});
+      const cmp = (a[spec.sort_by.field] || '').toString().localeCompare((b[spec.sort_by.field] || '').toString(), undefined, { numeric: true });
       return spec.sort_by.direction === 'desc' ? -cmp : cmp;
     });
   }
 
-  // Limit
   const limit = Math.min(spec.limit || 20, 50);
   const total = schools.length;
   schools = schools.slice(0, limit);
 
-  // Return only requested fields
-  const fieldsToReturn = spec.fields_to_return && spec.fields_to_return.length > 0
+  const fields = (spec.fields_to_return && spec.fields_to_return.length)
     ? spec.fields_to_return
-    : ['school_name','overall_rag','onboarding_stage','school_start_date',
-       'assigned_ftm','assigned_csm','city'];
-
-  // Always include school_name
-  if (!fieldsToReturn.includes('school_name')) fieldsToReturn.unshift('school_name');
+    : ['school_name', 'overall_rag', 'onboarding_stage', 'school_start_date', 'assigned_ftm', 'assigned_csm', 'city'];
+  if (!fields.includes('school_name')) fields.unshift('school_name');
 
   const trimmed = schools.map(s => {
     const obj = {};
-    fieldsToReturn.forEach(f => { if (s[f] !== undefined) obj[f] = s[f]; });
+    fields.forEach(f => { if (s[f] !== undefined) obj[f] = s[f]; });
     return obj;
   });
 
-  return { count: total, shown: trimmed.length, schools: trimmed, type: spec.query_type };
+  return { count: total, shown: trimmed.length, schools: trimmed };
 }
 
-// ── PASS 2: ANSWER GENERATOR ──────────────────────────────────
-async function generateAnswer(question, dataContext, querySpec) {
+// ── PASS 2: ANSWER GENERATOR ───────────────────────────────────
+async function generateAnswer(question, dataContext) {
   const roleRules = {
-    'Field Training Manager':     'Focus on TRAINING1, GAC/APM, implementation. Action-first.',
-    'Customer Success Manager':   'Focus on hardware, parent orientation, relationship. Include customer communication steps.',
-    'Sales Manager':              'Include business impact and retention risk.',
+    'Field Training Manager': 'Focus on TRAINING1, GAC/APM, implementation. Action-first.',
+    'Customer Success Manager': 'Focus on hardware, parent orientation, relationship. Include customer communication steps.',
     'Customer Support Executive': 'Include what to communicate to the customer and expected resolution time.',
   };
+  const empNote = currentEmployee && currentEmployee !== 'Overall' ? ' Viewing portfolio for: ' + currentEmployee + '.' : '';
+  const schNote = currentSchool ? ' Focused on school: ' + currentSchool + '.' : '';
   const roleInstruction = currentRole && roleRules[currentRole]
-    ? `Employee role: ${currentRole}. ${roleRules[currentRole]}`
+    ? 'Employee role: ' + currentRole + '. ' + roleRules[currentRole] + empNote + schNote
     : '';
 
   let dataSection = '';
-  if (dataContext && dataContext.count !== undefined) {
+  if (dataContext) {
     if (dataContext.count === 0) {
-      dataSection = `\nDATA RESULT: No schools found matching the query.`;
+      dataSection = '\nDATA RESULT: No schools found matching the query.';
     } else {
-      const schoolsText = dataContext.schools.map(s =>
-        Object.entries(s).map(([k,v]) => k+': '+v).join(' | ')
-      ).join('\n');
-      dataSection = `\nDATA RESULT: ${dataContext.count} schools total, showing ${dataContext.shown}:\n${schoolsText}`;
+      const schoolsText = dataContext.schools.map(s => Object.entries(s).map(([k, v]) => k + ': ' + v).join(' | ')).join('\n');
+      dataSection = '\nDATA RESULT: ' + dataContext.count + ' schools total, showing ' + dataContext.shown + ':\n' + schoolsText;
     }
   }
 
-  const systemPrompt = `You are an Onboarding Assistant for an EdTech company.
-
-RULES:
-1. Answer from the data provided and the SOP. Never use outside knowledge.
-2. Keep answer under 80 words unless listing schools — lists can be longer.
-3. For lists: show school name + most relevant status fields. Format clearly.
-4. Structure: Issue/Finding → Next steps if needed.
-5. End with: Source: Section [X] — [Name] (cite SOP if used, or "School Database" if data-driven)
-6. Never say "Based on the data" or "According to the SOP" — just state the facts.
-7. If no data found, say so clearly and suggest next steps.
-${roleInstruction}
-
-SOP:
-${SOP}${dataSection}`;
+  const systemPrompt = 'You are an Onboarding Assistant for an EdTech company.\n\n' +
+    'RULES:\n' +
+    '1. Answer from the data provided and the SOP. Never use outside knowledge.\n' +
+    '2. Keep answer under 80 words unless listing schools — lists can be longer.\n' +
+    '3. For lists: show school name + most relevant status fields, clearly formatted.\n' +
+    '4. Structure: Issue/Finding then Next steps if needed.\n' +
+    '5. End with: Source: Section [X] — [Name] (cite the SOP section, or write "School Database" if data-driven)\n' +
+    '6. Never say "Based on the data" or "According to the SOP" — just state the facts.\n' +
+    '7. If no data found, say so clearly and suggest next steps.\n' +
+    '8. Plain text only, no markdown headers or asterisks.\n' +
+    roleInstruction + '\n\nSOP:\n' + SOP + dataSection;
 
   return await callClaude(systemPrompt, question, conversationHistory.slice(0, -1), 500);
 }
 
-// ── SHARED CLAUDE CALLER ──────────────────────────────────────
+// ── SHARED CLAUDE CALLER ───────────────────────────────────────
 async function callClaude(systemPrompt, userMessage, history, maxTokens) {
   const messages = [...history, { role: 'user', content: userMessage }];
-
   const resp = await Promise.race([
     fetch(API_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-opus-4-5',
-        max_tokens: maxTokens || 400,
-        system: systemPrompt,
-        messages: messages
-      })
+      body: JSON.stringify({ model: 'claude-opus-4-5', max_tokens: maxTokens || 400, system: systemPrompt, messages })
     }),
     new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 30000))
   ]);
 
   const data = await resp.json();
-  console.log('Claude response type:', data.type, 'content blocks:', data.content?.length);
-
-  if (data.type === 'error' || data.error) {
-    throw new Error('API error: ' + (data.error ? data.error.message : 'unknown'));
-  }
-  if (!data.content || !data.content[0] || !data.content[0].text) {
-    throw new Error('empty response: ' + JSON.stringify(data).substring(0, 100));
-  }
-
+  if (data.type === 'error' || data.error) throw new Error('API error: ' + (data.error ? data.error.message : 'unknown'));
+  if (!data.content || !data.content[0] || !data.content[0].text) throw new Error('empty response');
   return data.content[0].text;
 }
 
-// ── RENDER MESSAGES ───────────────────────────────────────────
+// ── RENDER MESSAGES ────────────────────────────────────────────
 function addUserMessage(text) {
   const msgs = document.getElementById('messages');
-  const roleInitials = currentRole ? currentRole.split(' ').map(w=>w[0]).join('').slice(0,3) : 'ME';
+  const initials = currentRoleCode || 'ME';
   const div = document.createElement('div');
   div.className = 'msg user';
-  div.innerHTML = `
-    <div class="msg-avatar">${roleInitials}</div>
-    <div class="msg-content">
-      <div class="msg-bubble">${escHtml(text)}</div>
-    </div>`;
+  div.innerHTML = '<div class="msg-avatar">' + initials + '</div>' +
+    '<div class="msg-content"><div class="msg-bubble">' + escHtml(text) + '</div></div>';
   msgs.appendChild(div);
   scrollBottom();
 }
 
 function addAssistantMessage(text) {
-  // Parse source
   const sourceMatch = text.match(/Source:\s*(Section[^\n]+)/i);
-  const sopTextMatch = text.match(/SOP_TEXT_USED:\s*"([^"]+)"/);
+  const sopTextMatch = text.match(/SOPREF:\s*(.+)/);
 
-  let mainText = text
-    .replace(/Source:\s*Section[^\n\r]+/gi, '')
-    .replace(/SOPREF:\s*.+/gi, '')
-    .trim();
-
+  let mainText = text.replace(/Source:\s*Section[^\n\r]+/gi, '').replace(/SOPREF:\s*.+/gi, '').trim();
   const source = sourceMatch ? sourceMatch[1].trim() : null;
   const sopSnippet = sopTextMatch ? sopTextMatch[1].trim() : null;
+
+  const sourceHtml = source ? '<div class="msg-source"><span class="source-label">SOURCE</span>' + escHtml(source) + '</div>' : '';
+  const sopHtml = sopSnippet ? '<details class="sop-expand"><summary>View SOP text used</summary><div class="sop-expand-body">' + escHtml(sopSnippet) + '</div></details>' : '';
 
   const msgs = document.getElementById('messages');
   const div = document.createElement('div');
   div.className = 'msg assistant';
-
-  let sourceHtml = source ? `<div class="msg-source"><span class="source-label">SOURCE</span>${escHtml(source)}</div>` : '';
-  let sopHtml = sopSnippet ? `<details class="sop-expand"><summary>View SOP text used</summary><div class="sop-expand-body">${escHtml(sopSnippet)}</div></details>` : '';
-
-  div.innerHTML = `
-    <div class="msg-avatar">OA</div>
-    <div class="msg-content">
-      <div class="msg-role-tag">Onboarding Assistant · ${escHtml(currentRole)}</div>
-      <div class="msg-bubble">
-        ${renderMarkdown(mainText)}
-        ${sourceHtml}
-      </div>
-      ${sopHtml}
-    </div>`;
+  div.innerHTML = '<div class="msg-avatar">OA</div>' +
+    '<div class="msg-content">' +
+    '<div class="msg-role-tag">Onboarding Assistant &middot; ' + escHtml(currentRole) + '</div>' +
+    '<div class="msg-bubble">' + renderMarkdown(mainText) + sourceHtml + '</div>' +
+    sopHtml +
+    '</div>';
   msgs.appendChild(div);
   scrollBottom();
 }
@@ -1553,11 +1331,8 @@ function addErrorMessage(text) {
   const msgs = document.getElementById('messages');
   const div = document.createElement('div');
   div.className = 'msg assistant';
-  div.innerHTML = `
-    <div class="msg-avatar">OA</div>
-    <div class="msg-content">
-      <div class="msg-bubble" style="border-color:#F0C0CC;color:var(--maroon)">${escHtml(text)}</div>
-    </div>`;
+  div.innerHTML = '<div class="msg-avatar">OA</div>' +
+    '<div class="msg-content"><div class="msg-bubble" style="border-color:#F0C0CC;color:var(--maroon)">' + escHtml(text) + '</div></div>';
   msgs.appendChild(div);
   scrollBottom();
 }
@@ -1568,33 +1343,17 @@ function showTyping() {
   const div = document.createElement('div');
   div.className = 'msg assistant';
   div.id = id;
-  div.innerHTML = `
-    <div class="msg-avatar">OA</div>
-    <div class="msg-content">
-      <div class="msg-bubble">
-        <div class="typing-indicator">
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-        </div>
-      </div>
-    </div>`;
+  div.innerHTML = '<div class="msg-avatar">OA</div><div class="msg-content"><div class="msg-bubble">' +
+    '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>' +
+    '</div></div>';
   msgs.appendChild(div);
   scrollBottom();
   return id;
 }
+function removeTyping(id) { const el = document.getElementById(id); if (el) el.remove(); }
+function scrollBottom() { const m = document.getElementById('messages'); m.scrollTop = m.scrollHeight; }
 
-function removeTyping(id) {
-  const el = document.getElementById(id);
-  if (el) el.remove();
-}
-
-function scrollBottom() {
-  const msgs = document.getElementById('messages');
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-// ── NEW CONVERSATION ──────────────────────────────────────────
+// ── NEW CONVERSATION ────────────────────────────────────────────
 function newConversation() {
   conversationHistory = [];
   tokenCount = 0;
@@ -1602,37 +1361,38 @@ function newConversation() {
   showWelcome();
 }
 
-// ── SIDEBAR TABS ──────────────────────────────────────────────
+// ── SIDEBAR TABS ─────────────────────────────────────────────────
 function switchSidebarTab(tab) {
-  ['quick','toc','about'].forEach(t => {
-    document.getElementById('spanel-'+t).style.display = t === tab ? 'flex' : 'none';
-    document.getElementById('stab-'+t).classList.toggle('active', t === tab);
+  ['quick', 'toc', 'about'].forEach(t => {
+    document.getElementById('pane-' + t).hidden = (t !== tab);
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
   });
 }
 
-// ── SIDEBAR TOGGLE ────────────────────────────────────────────
+// ── SIDEBAR TOGGLE ───────────────────────────────────────────────
 let sidebarCollapsed = false;
 function toggleDesktopSidebar() {
-  const sidebar = document.getElementById('sidebar');
-  const toggle  = document.getElementById('sidebar-toggle');
   sidebarCollapsed = !sidebarCollapsed;
-  sidebar.classList.toggle('collapsed', sidebarCollapsed);
-  toggle.textContent = sidebarCollapsed ? '›' : '‹';
+  document.getElementById('app-sidebar').classList.toggle('collapsed', sidebarCollapsed);
+  document.getElementById('sidebar-collapse-btn').textContent = sidebarCollapsed ? '\u203A' : '\u2039';
 }
 
 function toggleMobileSidebar() {
-  const sidebar  = document.getElementById('sidebar');
-  const overlay  = document.getElementById('sidebar-overlay');
-  const isOpen   = sidebar.classList.contains('mobile-open');
+  const sidebar = document.getElementById('app-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  const isOpen = sidebar.classList.contains('mobile-open');
   sidebar.classList.toggle('mobile-open', !isOpen);
-  overlay.classList.toggle('visible', !isOpen);
+  backdrop.classList.toggle('visible', !isOpen);
+}
+function closeMobileSidebarIfOpen() {
+  if (window.matchMedia('(max-width: 768px)').matches) {
+    document.getElementById('app-sidebar').classList.remove('mobile-open');
+    document.getElementById('sidebar-backdrop').classList.remove('visible');
+  }
 }
 
-// ── INPUT HELPERS ─────────────────────────────────────────────
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-}
-
+// ── INPUT HELPERS ────────────────────────────────────────────────
+function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
 function autoResizeTextarea() {
   const ta = document.getElementById('chat-input');
   ta.addEventListener('input', () => {
@@ -1642,25 +1402,22 @@ function autoResizeTextarea() {
 }
 
 function renderMarkdown(str) {
-  // Convert **bold** to <strong>
-  let html = String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/^#{1,3}\s+(.+)$/gm, '<strong>$1</strong>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/\n(\d+\. )/g, '<br><span style="display:inline-block;min-width:18px">$1</span>')
-    .replace(/\n- /g, '<br>&bull; ')
-    .replace(/\n/g, '<br>');
-  return html;
+    .replace(/^(\d+\.\s)/gm, '<br>$1')
+    .replace(/^[-\u2022]\s/gm, '<br>&bull; ')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>')
+    .replace(/^(<br>)+/, '');
 }
 
 function escHtml(str) {
   return String(str)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#039;')
-    .replace(/\n/g,'<br>');
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#039;').replace(/\n/g, '<br>');
 }
 </script>
 </body>
