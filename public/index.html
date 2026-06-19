@@ -441,7 +441,9 @@ body {
   .ctrl-select { max-width: 38vw; font-size: 11px; padding: 5px 6px; height: 32px; }
   .new-chat-btn { padding: 0 8px; height: 32px; font-size: 11px; }
 
-  /* desktop school picker hidden, mobile row shown when active (handled by .has-school-picker rule above) */
+  /* On mobile: force the desktop inline picker off, force the second-row mobile picker on */
+  .app-header.has-school-picker .school-picker-desktop { display: none !important; }
+  .app-header.has-school-picker .header-school-row { display: block; }
   .header-school-row .school-picker input { font-size: 13px; }
 
   /* sidebar becomes an overlay drawer */
